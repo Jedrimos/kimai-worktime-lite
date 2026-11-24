@@ -598,6 +598,18 @@
         <source>wtl.cfg.day_buttons</source>
         <target>Knöpfe „Standardtag“ und „Wie letzter Tag“ beim Zeiteintrag anzeigen</target>
       </trans-unit>
+      <trans-unit id="wtl149" resname="wtl.cfg.site_today">
+        <source>wtl.cfg.site_today</source>
+        <target>Baustelle: Startseite „Heute“ anzeigen</target>
+      </trans-unit>
+      <trans-unit id="wtl150" resname="wtl.cfg.site_todos">
+        <source>wtl.cfg.site_todos</source>
+        <target>Baustelle: Restarbeiten („Noch zu machen“)</target>
+      </trans-unit>
+      <trans-unit id="wtl151" resname="wtl.cfg.site_photos">
+        <source>wtl.cfg.site_photos</source>
+        <target>Baustelle: Fotos</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

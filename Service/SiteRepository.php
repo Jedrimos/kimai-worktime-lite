@@ -12,6 +12,8 @@ final class SiteRepository
 {
     public const TABLE = 'kimai2_wtl_site_items';
     public const SHEETS = 'kimai2_wtl_site_sheets';
+    public const TODOS = 'kimai2_wtl_site_todos';
+    public const PHOTOS = 'kimai2_wtl_site_photos';
     public const KINDS = ['aufmass', 'material', 'notiz'];
     public const STATUS = ['offen', 'bestellt', 'geliefert'];
 
@@ -54,6 +56,26 @@ final class SiteRepository
             supplier VARCHAR(100) DEFAULT NULL,
             created_at DATETIME NOT NULL,
             INDEX wtl_sheet_user_project (user_id, project_id, kind),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->connection->executeStatement('CREATE TABLE IF NOT EXISTS ' . self::TODOS . ' (
+            id INT AUTO_INCREMENT NOT NULL,
+            user_id INT NOT NULL,
+            project_id INT NOT NULL,
+            text VARCHAR(500) NOT NULL,
+            done_at DATETIME DEFAULT NULL,
+            created_at DATETIME NOT NULL,
+            INDEX wtl_todo_user (user_id, done_at),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->connection->executeStatement('CREATE TABLE IF NOT EXISTS ' . self::PHOTOS . ' (
+            id INT AUTO_INCREMENT NOT NULL,
+            user_id INT NOT NULL,
+            project_id INT NOT NULL,
+            filename VARCHAR(100) NOT NULL,
+            comment VARCHAR(500) DEFAULT NULL,
+            created_at DATETIME NOT NULL,
+            INDEX wtl_photo_user_project (user_id, project_id),
             PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
         $cols = $this->connection->fetchFirstColumn('SHOW COLUMNS FROM ' . self::TABLE . " LIKE 'sheet_id'");
@@ -260,5 +282,98 @@ final class SiteRepository
         $this->ensureTable();
 
         return array_map('strval', $this->connection->fetchFirstColumn('SELECT supplier FROM ' . self::TABLE . " WHERE user_id = ? AND supplier IS NOT NULL AND supplier <> '' GROUP BY supplier ORDER BY COUNT(*) DESC", [$userId]));
+    }
+
+    // ---------- Restarbeiten ----------
+
+    public function addTodo(int $userId, int $projectId, string $text): void
+    {
+        $this->ensureTable();
+        $this->connection->insert(self::TODOS, ['user_id' => $userId, 'project_id' => $projectId, 'text' => $text, 'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s')]);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function findTodo(int $userId, int $id): ?array
+    {
+        $this->ensureTable();
+        $row = $this->connection->fetchAssociative('SELECT * FROM ' . self::TODOS . ' WHERE id = ? AND user_id = ?', [$id, $userId]);
+
+        return $row === false ? null : $row;
+    }
+
+    public function toggleTodo(int $userId, int $id): void
+    {
+        $this->ensureTable();
+        $this->connection->executeStatement('UPDATE ' . self::TODOS . ' SET done_at = IF(done_at IS NULL, NOW(), NULL) WHERE id = ? AND user_id = ?', [$id, $userId]);
+    }
+
+    public function deleteTodo(int $userId, int $id): void
+    {
+        $this->ensureTable();
+        $this->connection->delete(self::TODOS, ['id' => $id, 'user_id' => $userId]);
+    }
+
+    /**
+     * Offene zuerst, erledigte der letzten 14 Tage danach.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function todos(int $userId, ?int $projectId = null, bool $withDone = true): array
+    {
+        $this->ensureTable();
+        $sql = 'SELECT * FROM ' . self::TODOS . ' WHERE user_id = ?';
+        $params = [$userId];
+        if ($projectId !== null) {
+            $sql .= ' AND project_id = ?';
+            $params[] = $projectId;
+        }
+        $sql .= $withDone ? ' AND (done_at IS NULL OR done_at > DATE_SUB(NOW(), INTERVAL 14 DAY))' : ' AND done_at IS NULL';
+
+        return $this->connection->fetchAllAssociative($sql . ' ORDER BY done_at IS NOT NULL, done_at DESC, project_id, id', $params);
+    }
+
+    // ---------- Fotos ----------
+
+    public function addPhoto(int $userId, int $projectId, string $filename, ?string $comment): int
+    {
+        $this->ensureTable();
+        $this->connection->insert(self::PHOTOS, ['user_id' => $userId, 'project_id' => $projectId, 'filename' => $filename, 'comment' => $comment, 'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s')]);
+
+        return (int) $this->connection->lastInsertId();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function findPhoto(int $userId, int $id): ?array
+    {
+        $this->ensureTable();
+        $row = $this->connection->fetchAssociative('SELECT * FROM ' . self::PHOTOS . ' WHERE id = ? AND user_id = ?', [$id, $userId]);
+
+        return $row === false ? null : $row;
+    }
+
+    public function updatePhotoComment(int $userId, int $id, ?string $comment): void
+    {
+        $this->ensureTable();
+        $this->connection->update(self::PHOTOS, ['comment' => $comment], ['id' => $id, 'user_id' => $userId]);
+    }
+
+    public function deletePhoto(int $userId, int $id): void
+    {
+        $this->ensureTable();
+        $this->connection->delete(self::PHOTOS, ['id' => $id, 'user_id' => $userId]);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function photos(int $userId, int $projectId): array
+    {
+        $this->ensureTable();
+
+        return $this->connection->fetchAllAssociative('SELECT * FROM ' . self::PHOTOS . ' WHERE user_id = ? AND project_id = ? ORDER BY created_at DESC, id DESC', [$userId, $projectId]);
     }
 }

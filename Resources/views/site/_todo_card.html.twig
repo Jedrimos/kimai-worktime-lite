@@ -1,0 +1,15 @@
+{# params: project, todos, back, token #}
+{% set open = todos|filter(t => t.done_at is null)|length %}
+<div class="card mb-3">
+    <div class="card-header py-2"><strong><i class="fas fa-tasks me-2"></i>Noch zu machen</strong>{% if open > 0 %}<span class="badge bg-orange text-white ms-2">{{ open }}</span>{% endif %}</div>
+    <div class="list-group list-group-flush">
+        {% include '@WorkTimeLite/site/_todo_list.html.twig' with {todos: todos, back: back, token: token} only %}
+    </div>
+    <div class="card-body py-2">
+        <form method="post" action="{{ path('wtl_site_todo_add', {id: project.id}) }}" class="d-flex gap-2">
+            <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="back" value="{{ back }}">
+            <input type="text" name="text" class="form-control" placeholder="z. B. Abdeckung Bad fehlt" autocomplete="off">
+            <button class="btn btn-primary"><i class="fas fa-plus"></i></button>
+        </form>
+    </div>
+</div>

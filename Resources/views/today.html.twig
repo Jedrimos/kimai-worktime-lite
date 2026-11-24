@@ -1,0 +1,95 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Heute{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_today') %}
+{% set stoken = csrf_token('wtl_site') %}
+<style>
+    .wtl-today .wtl-big { font-size: 2.2rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+    .wtl-today .btn-xl { padding: 1rem; font-size: 1.15rem; font-weight: 700; }
+</style>
+<div class="wtl-today">
+    <div class="text-secondary mb-2">{{ now|format_date(pattern: 'EEEE, d. MMMM', locale: 'de') }}</div>
+
+    {# Stempeln #}
+    <div class="card mb-3 {{ running|length > 0 ? 'border-success' }}" style="{{ running|length > 0 ? 'border-width:2px' }}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <div>
+                    <div class="text-secondary small">Heute gearbeitet</div>
+                    <div class="wtl-big">{{ worked|duration }}</div>
+                </div>
+                {% if soll > 0 %}
+                    <div class="text-end">
+                        <div class="text-secondary small">Soll</div>
+                        <div class="h2 mb-0">{{ soll|duration }}</div>
+                        {% set diff = worked - soll %}
+                        <div class="small {{ diff >= 0 ? 'text-success' : 'text-secondary' }}">{{ diff >= 0 ? '+' : '−' }}{{ (diff|abs)|duration }}</div>
+                    </div>
+                {% endif %}
+            </div>
+            {% if running|length > 0 %}
+                {% for r in running %}
+                    <div class="mb-2"><span class="badge bg-success text-white me-1">läuft</span> seit {{ r.begin|date('H:i', false) }} · {{ r.project ? r.project.name }} · {{ r.activity ? r.activity.name }}</div>
+                    <form method="post" action="{{ path('wtl_today_stop', {id: r.id}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <button class="btn btn-danger w-100 btn-xl"><i class="fas fa-stop me-2"></i>Stopp</button>
+                    </form>
+                {% endfor %}
+            {% else %}
+                <div class="d-flex gap-2">
+                    {% if siteTs %}
+                        <form method="post" action="{{ path('wtl_today_start', {id: siteTs.id}) }}" class="flex-fill">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <button class="btn btn-success w-100 btn-xl"><i class="fas fa-play me-2"></i>Start</button>
+                        </form>
+                    {% endif %}
+                    <a class="btn btn-xl {{ siteTs ? '' : 'btn-success flex-fill' }}" href="{{ path('timesheet_create') }}" title="Anderes Projekt / nachtragen"><i class="fas fa-plus"></i>{% if not siteTs %} Eintrag{% endif %}</a>
+                </div>
+                {% if siteTs %}<div class="small text-secondary mt-1">Start auf: {{ siteTs.project.name }} · {{ siteTs.activity ? siteTs.activity.name }}</div>{% endif %}
+            {% endif %}
+            {% if todays|length > 0 %}
+                <div class="mt-3 small">
+                    {% for t in todays %}
+                        <div class="d-flex justify-content-between border-top pt-1 mt-1">
+                            <span>{{ t.begin|date('H:i', false) }}–{{ t.end ? t.end|date('H:i', false) : '…' }} {{ t.project ? t.project.name }}</span>
+                            <span class="text-secondary">{{ t.end ? t.duration|duration : '' }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Baustelle #}
+    {% if project %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="text-secondary small">{{ isCurrent ? 'Baustelle heute' : 'Zuletzt auf' }}</div>
+            <a class="h2 d-block mb-0 text-reset" href="{{ path('wtl_site_project', {id: project.id}) }}">{{ project.name }} ›</a>
+            {% if project.customer and project.customer.name != project.name %}<div class="text-secondary">{{ project.customer.name }}</div>{% endif %}
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                {% if mapsQuery %}<a class="btn btn-primary flex-fill" href="https://www.google.com/maps/dir/?api=1&destination={{ mapsQuery|url_encode }}" target="_blank" rel="noopener"><i class="fas fa-route me-1"></i>Navi</a>{% endif %}
+                {% if phone %}<a class="btn btn-success flex-fill" href="tel:{{ phone|replace({' ': '', '/': '', '-': ''}) }}"><i class="fas fa-phone me-1"></i>Anrufen</a>{% endif %}
+                {% if showPhotos %}<a class="btn flex-fill" href="{{ path('wtl_site_photos', {id: project.id}) }}"><i class="fas fa-camera me-1"></i>Foto</a>{% endif %}
+            </div>
+            <div class="d-flex gap-2 mt-2">
+                <a class="btn btn-sm flex-fill" href="{{ path('wtl_site_sheet_new', {id: project.id, kind: 'aufmass'}) }}">+ Aufmaß</a>
+                <a class="btn btn-sm flex-fill" href="{{ path('wtl_site_sheet_new', {id: project.id, kind: 'material'}) }}">+ Material</a>
+                <a class="btn btn-sm flex-fill" href="{{ path('wtl_site_sheet_new', {id: project.id, kind: 'notiz'}) }}">+ Notiz</a>
+            </div>
+        </div>
+    </div>
+    {% if showTodos %}
+        {% include '@WorkTimeLite/site/_todo_card.html.twig' with {project: project, todos: todos, back: path('wtl_today'), token: stoken} only %}
+    {% endif %}
+    {% endif %}
+
+    <div class="row g-2 mb-3">
+        {% if showTodos %}
+        <div class="col-6"><a class="card card-link text-reset" href="{{ path('wtl_site_todos') }}"><div class="card-body p-2 text-center"><div class="small text-secondary">Restarbeiten gesamt</div><div class="h2 mb-0 {{ allOpenTodos > 0 ? 'text-orange' }}">{{ allOpenTodos }}</div></div></a></div>
+        {% endif %}
+        <div class="col-6"><a class="card card-link text-reset" href="{{ path('wtl_site_orders') }}"><div class="card-body p-2 text-center"><div class="small text-secondary">Material offen</div><div class="h2 mb-0 {{ openMaterial > 0 ? 'text-orange' }}">{{ openMaterial }}</div></div></a></div>
+    </div>
+    <a class="btn w-100 mb-3" href="{{ path('wtl_site') }}"><i class="fas fa-hard-hat me-1"></i>Andere Baustelle</a>
+</div>
+{% endblock %}

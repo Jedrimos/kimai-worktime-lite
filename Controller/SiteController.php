@@ -11,6 +11,8 @@ use App\Repository\TimesheetRepository;
 use App\Repository\Query\ProjectQuery;
 use KimaiPlugin\WorkTimeLiteBundle\Service\Settings;
 use KimaiPlugin\WorkTimeLiteBundle\Service\SiteRepository;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,6 +36,8 @@ final class SiteController extends AbstractController
         private readonly HtmlToPdfConverter $pdfConverter,
         private readonly Settings $settings,
         private readonly TimesheetRepository $timesheetRepository,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
     )
     {
     }
@@ -275,6 +279,15 @@ final class SiteController extends AbstractController
         $only = (string) $request->query->get('kind', '');
         $only = \array_key_exists($only, self::KIND_LABELS) ? $only : null;
         $title = $only !== null ? self::SHEET_TITLES[$only] : 'Baustellenbericht';
+        $photos = [];
+        if ($only === null && $this->settings->bool('site_photos', true)) {
+            foreach (array_reverse($this->repository->photos($user->getId(), $id)) as $photo) {
+                $path = $this->photoDir($user->getId()) . '/' . basename((string) $photo['filename']);
+                if (is_file($path)) {
+                    $photos[] = $photo + ['path' => $path];
+                }
+            }
+        }
         $sheets = [];
         foreach (['aufmass', 'material', 'notiz'] as $k) {
             if ($only !== null && $only !== $k) {
@@ -291,6 +304,7 @@ final class SiteController extends AbstractController
             'title' => $title,
             'project' => $project,
             'sheets' => $sheets,
+            'photos' => $photos,
             'titles' => self::SHEET_TITLES,
             'user' => $user,
             'now' => new \DateTimeImmutable('now', new \DateTimeZone($user->getTimezone())),
@@ -330,6 +344,9 @@ final class SiteController extends AbstractController
             'phone2' => $customer?->getMobile() && $customer?->getPhone() ? $customer->getPhone() : null,
             'stats' => $stats,
             'recent' => $recent,
+            'todos' => $this->settings->bool('site_todos', true) ? $this->repository->todos($user->getId(), $project->getId()) : null,
+            'photos' => $this->settings->bool('site_photos', true) ? \array_slice($this->repository->photos($user->getId(), $project->getId()), 0, 6) : null,
+            'photoCount' => $this->settings->bool('site_photos', true) ? \count($this->repository->photos($user->getId(), $project->getId())) : 0,
         ];
     }
 
@@ -398,6 +415,151 @@ final class SiteController extends AbstractController
         }
 
         return $added;
+    }
+
+    // ---------- Restarbeiten ----------
+
+    #[Route(path: '/todos', name: 'wtl_site_todos', methods: ['GET'])]
+    public function todos(): Response
+    {
+        $this->denyUnless('site_todos');
+        $user = $this->getUser();
+        $projects = $this->visibleProjects($user);
+        $groups = [];
+        foreach ($this->repository->todos($user->getId(), null, false) as $todo) {
+            if (isset($projects[(int) $todo['project_id']])) {
+                $groups[(int) $todo['project_id']]['project'] = $projects[(int) $todo['project_id']];
+                $groups[(int) $todo['project_id']]['todos'][] = $todo;
+            }
+        }
+
+        return $this->render('@WorkTimeLite/site/todos.html.twig', ['groups' => $groups]);
+    }
+
+    #[Route(path: '/{id}/todo', name: 'wtl_site_todo_add', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function todoAdd(Request $request, int $id): Response
+    {
+        $this->denyUnless('site_todos');
+        $user = $this->getUser();
+        $this->loadProject($user, $id);
+        if ($this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            foreach (preg_split('/\R/', (string) $request->request->get('text')) ?: [] as $line) {
+                $line = trim($line);
+                if ($line !== '') {
+                    $this->repository->addTodo($user->getId(), $id, mb_substr($line, 0, 500));
+                }
+            }
+        }
+
+        return $this->redirect($this->safeBack($request, $this->generateUrl('wtl_site_project', ['id' => $id])));
+    }
+
+    #[Route(path: '/todo/{tid}/{action}', name: 'wtl_site_todo_action', requirements: ['tid' => '\d+', 'action' => 'toggle|delete'], methods: ['POST'])]
+    public function todoAction(Request $request, int $tid, string $action): Response
+    {
+        $user = $this->getUser();
+        $todo = $this->repository->findTodo($user->getId(), $tid) ?? throw $this->createNotFoundException();
+        if ($this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            $action === 'delete' ? $this->repository->deleteTodo($user->getId(), $tid) : $this->repository->toggleTodo($user->getId(), $tid);
+        }
+
+        return $this->redirect($this->safeBack($request, $this->generateUrl('wtl_site_project', ['id' => $todo['project_id']])));
+    }
+
+    // ---------- Fotos ----------
+
+    private function photoDir(int $userId): string
+    {
+        return $this->projectDir . '/var/data/wtl_photos/' . $userId;
+    }
+
+    #[Route(path: '/{id}/photos', name: 'wtl_site_photos', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function photos(Request $request, int $id): Response
+    {
+        $this->denyUnless('site_photos');
+        $user = $this->getUser();
+        $project = $this->loadProject($user, $id);
+
+        if ($request->isMethod('POST') && $this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            $comment = mb_substr(trim((string) $request->request->get('comment')), 0, 500);
+            $dir = $this->photoDir($user->getId());
+            if (!is_dir($dir)) {
+                mkdir($dir, 0775, true);
+            }
+            $count = 0;
+            foreach ($request->files->all('photos') as $file) {
+                if ($file === null || !$file->isValid() || $file->getSize() > 20 * 1024 * 1024) {
+                    continue;
+                }
+                $info = @getimagesize($file->getPathname());
+                $ext = match ($info[2] ?? null) { IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp', default => null };
+                if ($ext === null) {
+                    continue;
+                }
+                $name = bin2hex(random_bytes(12)) . '.' . $ext;
+                $file->move($dir, $name);
+                $this->repository->addPhoto($user->getId(), $id, $name, $comment !== '' ? $comment : null);
+                ++$count;
+            }
+            if ($count === 0) {
+                $this->flashError('Kein Bild erkannt (JPG, PNG oder WebP).');
+            }
+
+            return $this->redirectToRoute('wtl_site_photos', ['id' => $id]);
+        }
+
+        return $this->render('@WorkTimeLite/site/photos.html.twig', [
+            'project' => $project,
+            'photos' => $this->repository->photos($user->getId(), $id),
+        ]);
+    }
+
+    #[Route(path: '/photo/{pid}', name: 'wtl_site_photo', requirements: ['pid' => '\d+'], methods: ['GET'])]
+    public function photo(int $pid): Response
+    {
+        $user = $this->getUser();
+        $photo = $this->repository->findPhoto($user->getId(), $pid) ?? throw $this->createNotFoundException();
+        $path = $this->photoDir($user->getId()) . '/' . basename((string) $photo['filename']);
+        if (!is_file($path)) {
+            throw $this->createNotFoundException();
+        }
+        $response = new BinaryFileResponse($path);
+        $response->setPrivate();
+        $response->setMaxAge(86400);
+
+        return $response;
+    }
+
+    #[Route(path: '/photo/{pid}/{action}', name: 'wtl_site_photo_action', requirements: ['pid' => '\d+', 'action' => 'delete|comment'], methods: ['POST'])]
+    public function photoAction(Request $request, int $pid, string $action): Response
+    {
+        $user = $this->getUser();
+        $photo = $this->repository->findPhoto($user->getId(), $pid) ?? throw $this->createNotFoundException();
+        if ($this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            if ($action === 'delete') {
+                @unlink($this->photoDir($user->getId()) . '/' . basename((string) $photo['filename']));
+                $this->repository->deletePhoto($user->getId(), $pid);
+            } else {
+                $c = mb_substr(trim((string) $request->request->get('comment')), 0, 500);
+                $this->repository->updatePhotoComment($user->getId(), $pid, $c !== '' ? $c : null);
+            }
+        }
+
+        return $this->redirectToRoute('wtl_site_photos', ['id' => $photo['project_id']]);
+    }
+
+    private function denyUnless(string $feature): void
+    {
+        if (!$this->settings->bool($feature, true)) {
+            throw $this->createNotFoundException('Funktion ist ausgeschaltet');
+        }
+    }
+
+    private function safeBack(Request $request, string $fallback): string
+    {
+        $back = (string) $request->request->get('back');
+
+        return str_starts_with($back, '/') && !str_starts_with($back, '//') ? $back : $fallback;
     }
 
     #[Route(path: '/item/{id}/delete', name: 'wtl_site_item_delete', requirements: ['id' => '\d+'], methods: ['POST'])]

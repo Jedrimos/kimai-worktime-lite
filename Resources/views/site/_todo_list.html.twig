@@ -1,0 +1,14 @@
+{# params: todos, back, token #}
+{% for todo in todos %}
+    <div class="list-group-item py-2 d-flex align-items-center gap-2 {{ todo.done_at ? 'text-secondary' }}">
+        <form method="post" action="{{ path('wtl_site_todo_action', {tid: todo.id, action: 'toggle'}) }}">
+            <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="back" value="{{ back }}">
+            <button class="btn btn-icon {{ todo.done_at ? 'btn-success' : 'btn-outline-secondary' }}" style="width:2.4rem;height:2.4rem" title="{{ todo.done_at ? 'Wieder offen' : 'Erledigt' }}"><i class="fas fa-check"></i></button>
+        </form>
+        <div class="flex-fill" style="word-break: break-word; {{ todo.done_at ? 'text-decoration: line-through' }}">{{ todo.text }}</div>
+        <form method="post" action="{{ path('wtl_site_todo_action', {tid: todo.id, action: 'delete'}) }}" onsubmit="return confirm('Punkt löschen?')">
+            <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="back" value="{{ back }}">
+            <button class="btn btn-sm btn-ghost-danger p-1"><i class="fas fa-times"></i></button>
+        </form>
+    </div>
+{% endfor %}

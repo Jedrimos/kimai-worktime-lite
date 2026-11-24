@@ -1,0 +1,72 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Fotos{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_site') %}
+<div class="d-flex gap-2 mb-3">
+    <a class="btn" href="{{ path('wtl_site_project', {id: project.id}) }}"><i class="fas fa-chevron-left me-1"></i>{{ project.name }}</a>
+</div>
+<form method="post" enctype="multipart/form-data" class="card mb-3" id="wtl-photo-form">
+    <div class="card-body">
+        <input type="hidden" name="_token" value="{{ token }}">
+        <label class="btn btn-primary w-100 mb-2" style="padding:.9rem">
+            <i class="fas fa-camera me-2"></i>Foto aufnehmen / auswählen
+            <input type="file" name="photos[]" accept="image/*" multiple class="d-none" id="wtl-photo-input">
+        </label>
+        <input type="text" name="comment" class="form-control" placeholder="Kommentar (optional, z. B. Verteiler EG vor dem Zumachen)">
+        <div class="form-hint mt-1" id="wtl-photo-status">Bilder werden vor dem Hochladen verkleinert.</div>
+    </div>
+</form>
+<div class="row g-2">
+    {% for photo in photos %}
+        <div class="col-6 col-md-4">
+            <div class="card">
+                <a href="{{ path('wtl_site_photo', {pid: photo.id}) }}" target="_blank"><img src="{{ path('wtl_site_photo', {pid: photo.id}) }}" loading="lazy" class="card-img-top" style="aspect-ratio:4/3;object-fit:cover"></a>
+                <div class="card-body p-2">
+                    <div class="small text-secondary">{{ photo.created_at|date('d.m.Y H:i', false) }}</div>
+                    <form method="post" action="{{ path('wtl_site_photo_action', {pid: photo.id, action: 'comment'}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <input type="text" name="comment" class="form-control form-control-sm mt-1" value="{{ photo.comment }}" placeholder="Kommentar" onchange="this.form.submit()">
+                    </form>
+                    <form method="post" action="{{ path('wtl_site_photo_action', {pid: photo.id, action: 'delete'}) }}" onsubmit="return confirm('Foto löschen?')" class="text-end mt-1">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <button class="btn btn-sm btn-ghost-danger p-1"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-secondary text-center py-3">Noch keine Fotos.</div>
+    {% endfor %}
+</div>
+<script>
+(function () {
+    var input = document.getElementById('wtl-photo-input'), form = document.getElementById('wtl-photo-form'), status = document.getElementById('wtl-photo-status');
+    function shrink(file) {
+        return new Promise(function (resolve) {
+            var img = new Image(), url = URL.createObjectURL(file);
+            img.onload = function () {
+                var max = 1920, w = img.width, h = img.height, f = Math.min(1, max / Math.max(w, h));
+                var c = document.createElement('canvas'); c.width = Math.round(w * f); c.height = Math.round(h * f);
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                URL.revokeObjectURL(url);
+                c.toBlob(function (b) { resolve(b || file); }, 'image/jpeg', 0.82);
+            };
+            img.onerror = function () { resolve(file); };
+            img.src = url;
+        });
+    }
+    input.addEventListener('change', function () {
+        var files = Array.prototype.slice.call(input.files);
+        if (!files.length) { return; }
+        status.textContent = 'Lade ' + files.length + ' Bild(er) hoch …';
+        Promise.all(files.map(shrink)).then(function (blobs) {
+            var fd = new FormData(form);
+            fd.delete('photos[]');
+            blobs.forEach(function (b, i) { fd.append('photos[]', b, 'foto' + i + '.jpg'); });
+            return fetch(form.action || window.location.href, { method: 'POST', body: fd, credentials: 'same-origin' });
+        }).then(function () { window.location.reload(); })
+          .catch(function () { status.textContent = 'Hochladen fehlgeschlagen.'; });
+    });
+})();
+</script>
+{% endblock %}

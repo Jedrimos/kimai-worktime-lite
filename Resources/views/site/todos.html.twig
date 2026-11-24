@@ -1,0 +1,21 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Noch zu machen{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_site') %}
+{% set back = path('wtl_site_todos') %}
+{% for pid, g in groups %}
+    <div class="card mb-3">
+        <a class="card-header py-2 d-flex text-reset" href="{{ path('wtl_site_project', {id: pid}) }}">
+            <strong>{{ g.project.name }}</strong>
+            {% if g.project.customer and g.project.customer.name != g.project.name %}<span class="text-secondary ms-2">{{ g.project.customer.name }}</span>{% endif %}
+            <span class="badge bg-orange text-white ms-auto">{{ g.todos|length }}</span>
+        </a>
+        <div class="list-group list-group-flush">
+            {% include '@WorkTimeLite/site/_todo_list.html.twig' with {todos: g.todos, back: back, token: token} only %}
+        </div>
+    </div>
+{% else %}
+    <div class="text-secondary text-center py-4">Alles erledigt. 💪</div>
+{% endfor %}
+<div class="form-hint">Neue Punkte trägst du in der Übersicht der jeweiligen Baustelle ein.</div>
+{% endblock %}

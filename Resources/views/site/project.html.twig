@@ -55,6 +55,22 @@
     {% endfor %}
 </div>
 
+{% set token = csrf_token('wtl_site') %}
+{% if o.todos is not null %}
+    {% include '@WorkTimeLite/site/_todo_card.html.twig' with {project: project, todos: o.todos, back: path('wtl_site_project', {id: project.id}), token: token} only %}
+{% endif %}
+
+{% if o.photos is not null %}
+<div class="card mb-3">
+    <a class="card-header py-2 d-flex text-reset" href="{{ path('wtl_site_photos', {id: project.id}) }}"><strong><i class="fas fa-camera me-2"></i>Fotos</strong><span class="badge ms-2">{{ o.photoCount }}</span><span class="ms-auto small text-primary">{{ o.photoCount > 0 ? 'alle / neu' : 'Foto machen' }} ›</span></a>
+    {% if o.photos|length > 0 %}
+    <div class="card-body p-2 d-flex gap-2 overflow-auto">
+        {% for ph in o.photos %}<a href="{{ path('wtl_site_photos', {id: project.id}) }}"><img src="{{ path('wtl_site_photo', {pid: ph.id}) }}" loading="lazy" style="height:72px;width:96px;object-fit:cover;border-radius:4px"></a>{% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
 <div class="card mb-3">
     <div class="card-header py-2 d-flex"><strong>Zettel auf dieser Baustelle</strong>
         {% if o.sheets|length > 0 %}<a class="ms-auto small" href="{{ path('wtl_site_project_pdf', {id: project.id}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>alle als PDF</a>{% endif %}

@@ -34,6 +34,21 @@ td.c { width: 8mm; }
     {% else %}
         <p>Noch keine Einträge.</p>
     {% endfor %}
+    {% if photos is defined and photos|length > 0 %}
+        <h2>Fotos</h2>
+        <table class="photos">
+            {% for row in photos|batch(2) %}
+                <tr>
+                    {% for ph in row %}
+                        <td style="width:50%; border:none; text-align:center; padding:2mm">
+                            <img src="{{ ph.path }}" style="width:82mm; max-height:62mm">
+                            <div style="font-size:8pt; color:#555">{{ ph.created_at|date('d.m.Y H:i', false) }}{% if ph.comment %} – {{ ph.comment }}{% endif %}</div>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 {% else %}
     <div class="doctitle">Materialbestellung</div>
     <h1>Bestellliste – alle Baustellen</h1>
