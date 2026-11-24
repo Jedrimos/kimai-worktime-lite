@@ -42,7 +42,7 @@ final class Configuration implements ConfigurationInterface
                 ->scalarNode('mail_to')->defaultValue('')->end()
                 ->scalarNode('mail_cc')->defaultValue('')->end()
                 ->scalarNode('mail_subject')->defaultValue('Stundenzettel {monat} {jahr} – {name}')->end()
-                ->scalarNode('mail_body')->defaultValue("Hallo,\n\nanbei mein Stundenzettel für {monat} {jahr}.\n\nViele Grüße\n{name}")->end()
+                ->scalarNode('mail_body')->defaultValue('')->end()
                 ->scalarNode('storage_type')->defaultValue('none')->end()
                 ->scalarNode('storage_folder')->defaultValue('Arbeit/Stundenzettel/{jahr}')->end()
                 ->scalarNode('storage_server_path')->defaultValue('/opt/kimai/var/data/stundenzettel')->end()
