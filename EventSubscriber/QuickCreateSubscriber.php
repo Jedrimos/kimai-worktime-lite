@@ -107,7 +107,17 @@ final class QuickCreateSubscriber implements EventSubscriberInterface
                     callback();
                     return;
                 }
-                callback({ value: String(res.data.id), text: res.data.text });
+                // Option direkt ins <select> schreiben und auswählen (robuster als der TomSelect-Callback,
+                // weil Kimai die Liste sonst beim Synchronisieren wieder verwirft)
+                callback();
+                var id = String(res.data.id);
+                var exists = Array.prototype.some.call(select.options, function (o) { return o.value === id; });
+                if (!exists) { select.add(new Option(res.data.text, id)); }
+                ts.sync();
+                ts.setValue(id);
+                ts.close();
+                ts.blur();
+                select.dispatchEvent(new Event('change', { bubbles: true }));
             }).catch(function () {
                 window.alert('Anlegen fehlgeschlagen (keine Verbindung?)');
                 callback();
