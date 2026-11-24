@@ -482,6 +482,18 @@
         <source>wtl.cfg.custom_fields.help</source>
         <target>Format: Name | Typ [| pflicht]. Typen: text, langtext, ja/nein, auswahl: A, B, C. Die Felder erscheinen im Zeiteintrag und lassen sich in Exportvorlagen als Spalte wählen. Umbenennen erzeugt ein neues Feld.</target>
       </trans-unit>
+      <trans-unit id="wtl120" resname="wtl.holiday_pro_rata">
+        <source>wtl.holiday_pro_rata</source>
+        <target>Urlaub im Eintritts-/Austrittsjahr anteilig (1/12 pro vollem Monat)</target>
+      </trans-unit>
+      <trans-unit id="wtl121" resname="wtl.holiday_pro_rata.help">
+        <source>wtl.holiday_pro_rata.help</source>
+        <target>Bruchteile ab einem halben Tag werden aufgerundet. Ausschalten, wenn dir laut Vertrag der volle Jahresurlaub zusteht.</target>
+      </trans-unit>
+      <trans-unit id="wtl122" resname="wtl.pro_rata">
+        <source>wtl.pro_rata</source>
+        <target>anteilig</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -23,7 +23,7 @@
             <div class="col-6 col-md-3">
                 <div class="text-secondary small">{{ 'wtl.absence.vacation_left'|trans }} {{ shownYear }}</div>
                 <div class="h1 mb-0">{{ (entitlement - counts.vacation)|number_format(1, ',', '.') }}</div>
-                <div class="small text-secondary">{{ counts.vacation|number_format(1, ',', '.') }} / {{ entitlement|number_format(1, ',', '.') }} {{ 'wtl.days'|trans }}</div>
+                <div class="small text-secondary">{{ counts.vacation|number_format(1, ',', '.') }} / {{ entitlement|number_format(1, ',', '.') }} {{ 'wtl.days'|trans }}{% if entitlement != entitlementFull %} ({{ 'wtl.pro_rata'|trans }}){% endif %}</div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="text-secondary small">{{ 'wtl.type.sick'|trans }} {{ shownYear }}</div>

@@ -47,6 +47,12 @@ final class ContractFormExtension extends AbstractTypeExtension
                 'scale' => 1,
                 'constraints' => [new GreaterThanOrEqual(0)],
             ])
+            ->add(UserWorkSettings::PREF_HOLIDAY_PRO_RATA, CheckboxType::class, [
+                'label' => 'wtl.holiday_pro_rata',
+                'translation_domain' => 'messages',
+                'required' => false,
+                'help' => 'wtl.holiday_pro_rata.help',
+            ])
             ->add(UserWorkSettings::PREF_ABSENCE_MODE, ChoiceType::class, [
                 'label' => 'wtl.absence_mode',
                 'translation_domain' => 'messages',
@@ -97,6 +103,10 @@ final class ContractFormExtension extends AbstractTypeExtension
 
         $builder->get(UserWorkSettings::PREF_HOLIDAY_ASSUMPTION)->addModelTransformer(new CallbackTransformer(
             fn ($value) => (bool) $value,
+            fn ($value) => $value ? 1 : 0
+        ));
+        $builder->get(UserWorkSettings::PREF_HOLIDAY_PRO_RATA)->addModelTransformer(new CallbackTransformer(
+            fn ($value) => $value === null ? true : (bool) $value,
             fn ($value) => $value ? 1 : 0
         ));
 

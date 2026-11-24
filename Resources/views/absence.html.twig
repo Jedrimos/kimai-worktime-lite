@@ -21,7 +21,7 @@
                         <div class="flex-fill">
                             <div class="text-secondary small">{{ 'wtl.absence.vacation_left'|trans }} {{ year }}</div>
                             <div class="h1 mb-0 {% if remaining < 0 %}text-red{% endif %}">{{ remaining|number_format(1, ',', '.') }}</div>
-                            <div class="small text-secondary">{{ counts.vacation|number_format(1, ',', '.') }} / {{ entitlement|number_format(1, ',', '.') }} {{ 'wtl.days'|trans }}</div>
+                            <div class="small text-secondary">{{ counts.vacation|number_format(1, ',', '.') }} / {{ entitlement|number_format(1, ',', '.') }} {{ 'wtl.days'|trans }}{% if entitlement != entitlementFull %} ({{ 'wtl.pro_rata'|trans }}){% endif %}</div>
                         </div>
                         <div class="flex-fill">
                             <div class="text-secondary small">{{ 'wtl.type.sick'|trans }}</div>

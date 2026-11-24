@@ -18,6 +18,7 @@ final class UserWorkSettings
     public const PREF_HOLIDAY_REGION = 'wtlHolidayRegion';   // z.B. Germany/Bavaria
     public const PREF_HOLIDAY_ASSUMPTION = 'wtlHolidayAssumption'; // Mariä Himmelfahrt mitzählen
     public const PREF_BALANCE_START = 'wtlBalanceStart';     // Sekunden, Startsaldo (+/-)
+    public const PREF_HOLIDAY_PRO_RATA = 'wtlHolidayProRata'; // Urlaub im Ein-/Austrittsjahr anteilig
 
     public const REGIONS = [
         'Bundesweit' => 'Germany',
@@ -109,6 +110,62 @@ final class UserWorkSettings
         }
 
         return $total;
+    }
+
+    public function isHolidayProRata(User $user): bool
+    {
+        return (bool) $user->getPreferenceValue(self::PREF_HOLIDAY_PRO_RATA, true, false);
+    }
+
+    /**
+     * Volle Beschäftigungsmonate im Jahr (zwischen erstem und letztem Arbeitstag).
+     */
+    public function getFullMonthsInYear(User $user, int $year): int
+    {
+        $tz = new \DateTimeZone($user->getTimezone());
+        $yearStart = new \DateTimeImmutable($year . '-01-01', $tz);
+        $yearEnd = new \DateTimeImmutable($year . '-12-31', $tz);
+        $first = $user->getWorkStartingDay();
+        $last = $user->getLastWorkingDay();
+        $from = ($first !== null && $first->format('Y-m-d') > $yearStart->format('Y-m-d')) ? new \DateTimeImmutable($first->format('Y-m-d'), $tz) : $yearStart;
+        $to = ($last !== null && $last->format('Y-m-d') < $yearEnd->format('Y-m-d')) ? new \DateTimeImmutable($last->format('Y-m-d'), $tz) : $yearEnd;
+        if ($to < $from) {
+            return 0;
+        }
+
+        $months = 0;
+        for ($m = 1; $m <= 12; $m++) {
+            $mStart = new \DateTimeImmutable(\sprintf('%04d-%02d-01', $year, $m), $tz);
+            $mEnd = $mStart->modify('last day of this month');
+            if ($from <= $mStart && $to >= $mEnd) {
+                $months++;
+            }
+        }
+
+        return $months;
+    }
+
+    /**
+     * Urlaubsanspruch im Jahr. Bei "anteilig": 1/12 pro vollem Beschäftigungsmonat,
+     * Bruchteile ab einem halben Tag werden aufgerundet (wie § 5 BUrlG).
+     */
+    public function getHolidayEntitlement(User $user, int $year): float
+    {
+        $perYear = $user->getHolidaysPerYear();
+        if (!$this->isHolidayProRata($user) || $perYear <= 0) {
+            return $perYear;
+        }
+
+        $months = $this->getFullMonthsInYear($user, $year);
+        if ($months >= 12) {
+            return $perYear;
+        }
+
+        $value = $perYear * $months / 12;
+        $full = floor($value);
+        $fraction = $value - $full;
+
+        return $fraction >= 0.5 ? $full + 1 : round($value, 1);
     }
 
     public function getBalanceStart(User $user): int

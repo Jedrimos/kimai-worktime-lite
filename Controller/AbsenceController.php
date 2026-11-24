@@ -142,7 +142,7 @@ final class AbsenceController extends AbstractController
             }
         }
 
-        $entitlement = $profile->getHolidaysPerYear();
+        $entitlement = $this->userSettings->getHolidayEntitlement($profile, $year);
 
         $page = new PageSetup('wtl.absence.title');
         $page->setHelp('contract.html');
@@ -155,6 +155,7 @@ final class AbsenceController extends AbstractController
             'rows' => $rows,
             'counts' => $counts,
             'entitlement' => $entitlement,
+            'entitlementFull' => $profile->getHolidaysPerYear(),
             'remaining' => $entitlement - $counts['vacation'],
             'year' => $year,
             'absenceValue' => $this->userSettings->getAbsenceValue($profile),
