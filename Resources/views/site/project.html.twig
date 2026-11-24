@@ -33,23 +33,25 @@
                 <div class="row g-2">
                     <div class="col-6 col-md-2"><input type="date" name="date" class="form-control" value="{{ last.date|default(today) }}"></div>
                     <div class="col-6 col-md-2"><input type="text" name="room" class="form-control" placeholder="Raum / Stelle" value="{{ last.room|default('') }}" list="wtl-rooms"></div>
-                    {% if kind != 'notiz' %}
-                        <div class="col-6 col-md-2"><input type="text" name="quantity" class="form-control" inputmode="decimal" placeholder="Menge" autofocus></div>
-                        <div class="col-6 col-md-2">
-                            <input type="text" name="unit" class="form-control" placeholder="Einheit" list="wtl-units" value="{{ attribute(last, 'unit_' ~ kind)|default(kind == 'aufmass' ? 'm' : 'Stk') }}">
+                    {% if kind == 'notiz' %}
+                        <div class="col-12"><textarea name="rows[0][text]" class="form-control" rows="3" placeholder="Notiz" autofocus></textarea></div>
+                    {% else %}
+                        {% set defUnit = attribute(last, 'unit_' ~ kind)|default(kind == 'aufmass' ? 'm' : 'Stk') %}
+                        <div class="col-12" id="wtl-rows" data-unit="{{ defUnit }}">
+                            {% for i in 0..2 %}
+                                <div class="wtl-line d-flex gap-1 mb-1">
+                                    <input type="text" name="rows[{{ i }}][quantity]" class="form-control" style="max-width:5.5rem" inputmode="decimal" placeholder="Menge" {{ i == 0 ? 'autofocus' }}>
+                                    <input type="text" name="rows[{{ i }}][unit]" class="form-control" style="max-width:5rem" list="wtl-units" value="{{ defUnit }}">
+                                    <input type="text" name="rows[{{ i }}][text]" class="form-control" placeholder="{{ kind == 'aufmass' ? 'z. B. NYM-J 3x1,5 UP' : 'z. B. Schalter Gira E2' }}" list="wtl-suggest">
+                                </div>
+                            {% endfor %}
                         </div>
+                        <div class="col-12"><button type="button" class="btn btn-sm w-100" id="wtl-addrow"><i class="fas fa-plus me-1"></i>Weitere Zeile</button></div>
                     {% endif %}
-                    <div class="col-12 {{ kind == 'notiz' ? 'col-md-8' : 'col-md-4' }}">
-                        {% if kind == 'notiz' %}
-                            <textarea name="text" class="form-control" rows="2" placeholder="Notiz" required autofocus></textarea>
-                        {% else %}
-                            <input type="text" name="text" class="form-control" placeholder="{{ kind == 'aufmass' ? 'z. B. NYM-J 3x1,5 Unterputz' : 'z. B. Schalter Gira E2 reinweiß' }}" list="wtl-suggest" required>
-                        {% endif %}
-                    </div>
                     {% if kind == 'material' %}
                         <div class="col-12 col-md-4"><input type="text" name="supplier" class="form-control" placeholder="Großhändler (z. B. Sonepar, Rexel, Zander)" list="wtl-suppliers" value="{{ last.supplier|default('') }}"></div>
                     {% endif %}
-                    <div class="col-12"><button class="btn btn-primary w-100"><i class="fas fa-plus me-1"></i>{{ kinds[kind] }} hinzufügen</button></div>
+                    <div class="col-12"><button class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>{{ kind == 'notiz' ? 'Notiz speichern' : 'Alle Zeilen speichern' }}</button></div>
                 </div>
                 <datalist id="wtl-units">{% for u in units %}<option value="{{ u }}">{% endfor %}</datalist>
                 <datalist id="wtl-suggest">{% for s in suggestions %}<option value="{{ s }}">{% endfor %}</datalist>
@@ -58,6 +60,38 @@
             </form>
         </div>
     </div>
+    <script>
+    (function () {
+        var box = document.getElementById('wtl-rows'), btn = document.getElementById('wtl-addrow');
+        if (!box || !btn) { return; }
+        function addRow() {
+            var lines = box.querySelectorAll('.wtl-line'), last = lines[lines.length - 1];
+            var n = lines.length, row = last.cloneNode(true);
+            row.querySelectorAll('input').forEach(function (inp) {
+                inp.name = inp.name.replace(/rows\[\d+\]/, 'rows[' + n + ']');
+                inp.removeAttribute('autofocus');
+                if (/\[unit\]$/.test(inp.name)) { inp.value = last.querySelector('[name$="[unit]"]').value || box.dataset.unit; } else { inp.value = ''; }
+            });
+            box.appendChild(row);
+            return row;
+        }
+        btn.addEventListener('click', function () { addRow().querySelector('input').focus(); });
+        // automatisch neue leere Zeile, sobald die letzte befüllt wird
+        box.addEventListener('input', function (e) {
+            var lines = box.querySelectorAll('.wtl-line'), last = lines[lines.length - 1];
+            if (last.contains(e.target) && e.target.value !== '') { addRow(); }
+        });
+        // Enter springt in die nächste Zeile statt abzuschicken
+        box.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') { return; }
+            e.preventDefault();
+            var inputs = Array.prototype.slice.call(box.querySelectorAll('input'));
+            var i = inputs.indexOf(e.target);
+            var next = inputs[i + (3 - i % 3)];
+            if (next) { next.focus(); }
+        });
+    })();
+    </script>
 
     {% for date, items in byKind[kind] %}
         <div class="card mb-2">

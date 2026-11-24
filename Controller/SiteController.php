@@ -153,33 +153,51 @@ final class SiteController extends AbstractController
             if (!\array_key_exists($kind, self::KIND_LABELS)) {
                 $kind = 'aufmass';
             }
-            $text = trim((string) $request->request->get('text'));
-            $qty = trim(str_replace(',', '.', (string) $request->request->get('quantity')));
             try {
                 $date = new \DateTimeImmutable((string) $request->request->get('date', 'today'), $tz);
             } catch (\Exception) {
                 $date = new \DateTimeImmutable('today', $tz);
             }
-            if ($text === '') {
-                $this->flashError('Bitte einen Text eingeben.');
-            } else {
+            $room = mb_substr(trim((string) $request->request->get('room')), 0, 100);
+            $supplier = $kind === 'material' ? mb_substr(trim((string) $request->request->get('supplier')), 0, 100) : '';
+            $rows = $request->request->all('rows');
+            $added = 0;
+            $lastUnit = null;
+            foreach ($rows as $row) {
+                if (!\is_array($row)) {
+                    continue;
+                }
+                $text = trim((string) ($row['text'] ?? ''));
+                if ($text === '') {
+                    continue;
+                }
+                $qty = trim(str_replace(',', '.', (string) ($row['quantity'] ?? '')));
+                $unit = $kind === 'notiz' ? '' : mb_substr(trim((string) ($row['unit'] ?? '')), 0, 20);
+                $lastUnit = $unit !== '' ? $unit : $lastUnit;
                 $this->repository->add($user->getId(), [
                     'project_id' => $id,
                     'item_date' => $date->format('Y-m-d'),
                     'kind' => $kind,
                     'quantity' => is_numeric($qty) ? (float) $qty : null,
-                    'unit' => $kind === 'notiz' ? null : (mb_substr(trim((string) $request->request->get('unit')), 0, 20) ?: null),
+                    'unit' => $unit !== '' ? $unit : null,
                     'text' => mb_substr($text, 0, 500),
-                    'room' => mb_substr(trim((string) $request->request->get('room')), 0, 100) ?: null,
-                    'supplier' => $kind === 'material' ? (mb_substr(trim((string) $request->request->get('supplier')), 0, 100) ?: null) : null,
+                    'room' => $room !== '' ? $room : null,
+                    'supplier' => $supplier !== '' ? $supplier : null,
                 ]);
-                // Datum, Raum und Großhändler für die nächste Zeile merken
+                ++$added;
+            }
+            if ($added === 0) {
+                $this->flashError('Bitte mindestens eine Zeile mit Text ausfüllen.');
+            } else {
+                // Datum, Raum, Einheit und Großhändler für das nächste Mal merken
                 $last = (array) $request->getSession()->get('wtl_site_last', []);
-                $last['unit_' . $kind] = (string) $request->request->get('unit');
+                if ($lastUnit !== null) {
+                    $last['unit_' . $kind] = $lastUnit;
+                }
                 $last['date'] = $date->format('Y-m-d');
-                $last['room'] = (string) $request->request->get('room');
+                $last['room'] = $room;
                 if ($kind === 'material') {
-                    $last['supplier'] = (string) $request->request->get('supplier');
+                    $last['supplier'] = $supplier;
                 }
                 $request->getSession()->set('wtl_site_last', $last);
             }
