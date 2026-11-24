@@ -2,7 +2,7 @@
     "name": "jedrimos/worktime-lite-bundle",
     "description": "WorkTime Lite: Arbeitsbeginn, Abwesenheiten (Urlaub/Krank), Feiertage, Monatsabschluss mit PDF-Versand und bequeme Zeiteingabe für Kimai",
     "type": "kimai-plugin",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "license": "MIT",
     "keywords": ["kimai", "kimai-plugin"],
     "extra": {

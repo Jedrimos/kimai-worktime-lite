@@ -13,6 +13,7 @@ use App\Repository\TimesheetRepository;
 use App\Repository\UserRepository;
 use App\Timesheet\TimesheetService;
 use App\Utils\PageSetup;
+use App\Validator\Constraints\TimesheetZeroDuration;
 use App\Validator\ValidationFailedException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use App\WorkingTime\WorkingTimeService;
@@ -285,6 +286,8 @@ final class AbsenceController extends AbstractController
             }
 
             try {
+                // Überstundenabbau hat bewusst 0 Stunden – auch wenn "leere Dauer" sonst verboten ist
+                $this->timesheetService->setIgnoreValidationCodes($duration === 0 ? [TimesheetZeroDuration::ZERO_DURATION_ERROR] : []);
                 $this->timesheetService->saveTimesheet($timesheet);
                 $created++;
             } catch (ValidationFailedException $ex) {
@@ -300,6 +303,7 @@ final class AbsenceController extends AbstractController
 
             $day = $next;
         }
+        $this->timesheetService->setIgnoreValidationCodes([]);
 
         return ['created' => $created, 'skipped' => $skipped];
     }
