@@ -11,6 +11,7 @@ use Doctrine\DBAL\Connection;
 final class SiteRepository
 {
     public const TABLE = 'kimai2_wtl_site_items';
+    public const SHEETS = 'kimai2_wtl_site_sheets';
     public const KINDS = ['aufmass', 'material', 'notiz'];
     public const STATUS = ['offen', 'bestellt', 'geliefert'];
 
@@ -43,7 +44,104 @@ final class SiteRepository
             INDEX wtl_site_status (user_id, kind, status),
             PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->connection->executeStatement('CREATE TABLE IF NOT EXISTS ' . self::SHEETS . ' (
+            id INT AUTO_INCREMENT NOT NULL,
+            user_id INT NOT NULL,
+            project_id INT NOT NULL,
+            kind VARCHAR(20) NOT NULL,
+            sheet_date DATE NOT NULL,
+            title VARCHAR(150) DEFAULT NULL,
+            supplier VARCHAR(100) DEFAULT NULL,
+            created_at DATETIME NOT NULL,
+            INDEX wtl_sheet_user_project (user_id, project_id, kind),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $cols = $this->connection->fetchFirstColumn('SHOW COLUMNS FROM ' . self::TABLE . " LIKE 'sheet_id'");
+        if (\count($cols) === 0) {
+            $this->connection->executeStatement('ALTER TABLE ' . self::TABLE . ' ADD sheet_id INT DEFAULT NULL, ADD INDEX wtl_site_sheet (sheet_id)');
+        }
+        // alte Einträge ohne Zettel: pro Tag einen Zettel anlegen
+        $orphans = $this->connection->fetchAllAssociative('SELECT user_id, project_id, kind, item_date, MAX(supplier) supplier FROM ' . self::TABLE . ' WHERE sheet_id IS NULL GROUP BY user_id, project_id, kind, item_date');
+        foreach ($orphans as $o) {
+            $sid = $this->insertSheet((int) $o['user_id'], (int) $o['project_id'], (string) $o['kind'], (string) $o['item_date'], null, $o['supplier'] !== null ? (string) $o['supplier'] : null);
+            $this->connection->executeStatement('UPDATE ' . self::TABLE . ' SET sheet_id = ? WHERE sheet_id IS NULL AND user_id = ? AND project_id = ? AND kind = ? AND item_date = ?', [$sid, $o['user_id'], $o['project_id'], $o['kind'], $o['item_date']]);
+        }
         $this->ready = true;
+    }
+
+    public function createSheet(int $userId, int $projectId, string $kind, string $date, ?string $title, ?string $supplier): int
+    {
+        $this->ensureTable();
+
+        return $this->insertSheet($userId, $projectId, $kind, $date, $title, $supplier);
+    }
+
+    private function insertSheet(int $userId, int $projectId, string $kind, string $date, ?string $title, ?string $supplier): int
+    {
+        $this->connection->insert(self::SHEETS, [
+            'user_id' => $userId,
+            'project_id' => $projectId,
+            'kind' => $kind,
+            'sheet_date' => $date,
+            'title' => $title,
+            'supplier' => $supplier,
+            'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+        ]);
+
+        return (int) $this->connection->lastInsertId();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function findSheet(int $userId, int $id): ?array
+    {
+        $this->ensureTable();
+        $row = $this->connection->fetchAssociative('SELECT * FROM ' . self::SHEETS . ' WHERE id = ? AND user_id = ?', [$id, $userId]);
+
+        return $row === false ? null : $row;
+    }
+
+    public function updateSheet(int $userId, int $id, string $date, ?string $title, ?string $supplier): void
+    {
+        $this->ensureTable();
+        $this->connection->update(self::SHEETS, ['sheet_date' => $date, 'title' => $title, 'supplier' => $supplier], ['id' => $id, 'user_id' => $userId]);
+        $this->connection->update(self::TABLE, ['item_date' => $date, 'supplier' => $supplier], ['sheet_id' => $id, 'user_id' => $userId]);
+    }
+
+    public function deleteSheet(int $userId, int $id): void
+    {
+        $this->ensureTable();
+        $this->connection->delete(self::TABLE, ['sheet_id' => $id, 'user_id' => $userId]);
+        $this->connection->delete(self::SHEETS, ['id' => $id, 'user_id' => $userId]);
+    }
+
+    /**
+     * Zettel eines Projekts (neueste zuerst) mit Anzahl Positionen und offenen Materialpositionen.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function sheetsForProject(int $userId, int $projectId, ?string $kind = null): array
+    {
+        $this->ensureTable();
+        $sql = 'SELECT s.*, COUNT(i.id) items, SUM(CASE WHEN i.status = \'offen\' THEN 1 ELSE 0 END) open_items FROM ' . self::SHEETS . ' s LEFT JOIN ' . self::TABLE . ' i ON i.sheet_id = s.id WHERE s.user_id = ? AND s.project_id = ?';
+        $params = [$userId, $projectId];
+        if ($kind !== null) {
+            $sql .= ' AND s.kind = ?';
+            $params[] = $kind;
+        }
+
+        return $this->connection->fetchAllAssociative($sql . ' GROUP BY s.id ORDER BY s.sheet_date DESC, s.id DESC', $params);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function itemsForSheet(int $userId, int $sheetId): array
+    {
+        $this->ensureTable();
+
+        return $this->connection->fetchAllAssociative('SELECT * FROM ' . self::TABLE . ' WHERE user_id = ? AND sheet_id = ? ORDER BY id', [$userId, $sheetId]);
     }
 
     /**
@@ -64,6 +162,7 @@ final class SiteRepository
             'room' => $data['room'],
             'supplier' => $data['supplier'],
             'status' => $data['kind'] === 'material' ? 'offen' : null,
+            'sheet_id' => $data['sheet_id'] ?? null,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
@@ -135,7 +234,7 @@ final class SiteRepository
     public function projectsWithItems(int $userId): array
     {
         $this->ensureTable();
-        $rows = $this->connection->fetchAllAssociative('SELECT project_id, COUNT(*) items, MAX(updated_at) last FROM ' . self::TABLE . ' WHERE user_id = ? GROUP BY project_id ORDER BY last DESC', [$userId]);
+        $rows = $this->connection->fetchAllAssociative('SELECT s.project_id, COUNT(DISTINCT s.id) items, GREATEST(MAX(s.created_at), COALESCE(MAX(i.updated_at), MAX(s.created_at))) last FROM ' . self::SHEETS . ' s LEFT JOIN ' . self::TABLE . ' i ON i.sheet_id = s.id WHERE s.user_id = ? GROUP BY s.project_id ORDER BY last DESC', [$userId]);
 
         return array_map(fn ($r) => ['project_id' => (int) $r['project_id'], 'items' => (int) $r['items'], 'last' => (string) $r['last']], $rows);
     }

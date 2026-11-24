@@ -1,127 +1,38 @@
 {% extends 'page_setup.html.twig' %}
-{% import '@WorkTimeLite/site/_macros.html.twig' as m %}
 {% block page_title %}{{ project.name }}{% endblock %}
 {% block main %}
-{% set token = csrf_token('wtl_site') %}
-<style>
-    .wtl-site .nav-link { font-weight: 600; }
-    .wtl-site .wtl-row { display: flex; gap: .75rem; align-items: center; }
-    .wtl-site .wtl-qty { min-width: 5.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .wtl-site .wtl-text { flex: 1; word-break: break-word; }
-    .wtl-site input, .wtl-site select { font-size: 1rem; }
-</style>
-<div class="wtl-site">
-    <div class="d-flex gap-2 mb-3 flex-wrap">
-        <a class="btn" href="{{ path('wtl_site') }}"><i class="fas fa-chevron-left me-1"></i>Baustellen</a>
-        <a class="btn" href="{{ path('wtl_site_orders') }}"><i class="fas fa-truck me-1"></i>Bestellliste</a>
-        <a class="btn btn-primary ms-auto" href="{{ path('wtl_site_project_pdf', {id: project.id, kind: kind}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF {{ kind == 'material' ? 'Materialbestellung' : kinds[kind] }}</a>
-        <a class="btn" href="{{ path('wtl_site_project_pdf', {id: project.id}) }}" target="_blank" title="Alles in einem PDF"><i class="fas fa-file-pdf me-1"></i>Alles</a>
+<div class="d-flex gap-2 mb-3 flex-wrap">
+    <a class="btn" href="{{ path('wtl_site') }}"><i class="fas fa-chevron-left me-1"></i>Baustellen</a>
+    <a class="btn" href="{{ path('wtl_site_orders') }}"><i class="fas fa-truck me-1"></i>Bestellliste</a>
+    <a class="btn ms-auto" href="{{ path('wtl_site_project_pdf', {id: project.id}) }}" target="_blank" title="Alle Zettel in einem PDF"><i class="fas fa-file-pdf me-1"></i>Alles</a>
+</div>
+{% if project.customer %}<div class="text-secondary mb-2">{{ project.customer.name }}</div>{% endif %}
+
+<ul class="nav nav-tabs nav-fill">
+    {% for k, label in kinds %}
+        <li class="nav-item"><a class="nav-link fw-bold {{ k == kind ? 'active' }}" href="{{ path('wtl_site_project', {id: project.id, kind: k}) }}">{{ label }} <span class="badge ms-1">{{ counts[k] }}</span></a></li>
+    {% endfor %}
+</ul>
+<div class="card mb-3" style="border-top-left-radius:0;border-top-right-radius:0">
+    <div class="card-body">
+        <a class="btn btn-primary w-100" href="{{ path('wtl_site_sheet_new', {id: project.id, kind: kind}) }}"><i class="fas fa-plus me-1"></i>Neue{{ kind == 'aufmass' ? 's' }} {{ titles[kind] == 'Notizen' ? 'Notiz' : titles[kind] }}</a>
     </div>
-    {% if project.customer %}<div class="text-secondary mb-2">{{ project.customer.name }}</div>{% endif %}
+</div>
 
-    <ul class="nav nav-tabs nav-fill mb-0">
-        {% for k, label in kinds %}
-            <li class="nav-item"><a class="nav-link {{ k == kind ? 'active' }}" href="{{ path('wtl_site_project', {id: project.id, kind: k}) }}">{{ label }} <span class="badge ms-1">{{ byKind[k]|reduce((c, d) => c + d|length, 0) }}</span></a></li>
-        {% endfor %}
-    </ul>
-
-    <div class="card mb-3" style="border-top-left-radius:0;border-top-right-radius:0">
-        <div class="card-body">
-            <form method="post" action="{{ path('wtl_site_project', {id: project.id, kind: kind}) }}" autocomplete="off">
-                <input type="hidden" name="_token" value="{{ token }}">
-                <input type="hidden" name="kind" value="{{ kind }}">
-                <div class="row g-2">
-                    <div class="col-6 col-md-2"><input type="date" name="date" class="form-control" value="{{ last.date|default(today) }}"></div>
-                    <div class="col-6 col-md-2"><input type="text" name="room" class="form-control" placeholder="Raum / Stelle" value="{{ last.room|default('') }}" list="wtl-rooms"></div>
-                    {% if kind == 'notiz' %}
-                        <div class="col-12"><textarea name="rows[0][text]" class="form-control" rows="3" placeholder="Notiz" autofocus></textarea></div>
-                    {% else %}
-                        {% set defUnit = attribute(last, 'unit_' ~ kind)|default(kind == 'aufmass' ? 'm' : 'Stk') %}
-                        <div class="col-12" id="wtl-rows" data-unit="{{ defUnit }}">
-                            {% for i in 0..2 %}
-                                <div class="wtl-line d-flex gap-1 mb-1">
-                                    <input type="text" name="rows[{{ i }}][quantity]" class="form-control" style="max-width:5.5rem" inputmode="decimal" placeholder="Menge" {{ i == 0 ? 'autofocus' }}>
-                                    <input type="text" name="rows[{{ i }}][unit]" class="form-control" style="max-width:5rem" list="wtl-units" value="{{ defUnit }}">
-                                    <input type="text" name="rows[{{ i }}][text]" class="form-control" placeholder="{{ kind == 'aufmass' ? 'z. B. NYM-J 3x1,5 UP' : 'z. B. Schalter Gira E2' }}" list="wtl-suggest">
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <div class="col-12"><button type="button" class="btn btn-sm w-100" id="wtl-addrow"><i class="fas fa-plus me-1"></i>Weitere Zeile</button></div>
-                    {% endif %}
-                    {% if kind == 'material' %}
-                        <div class="col-12 col-md-4"><input type="text" name="supplier" class="form-control" placeholder="Großhändler (z. B. Sonepar, Rexel, Zander)" list="wtl-suppliers" value="{{ last.supplier|default('') }}"></div>
-                    {% endif %}
-                    <div class="col-12"><button class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>{{ kind == 'notiz' ? 'Notiz speichern' : 'Alle Zeilen speichern' }}</button></div>
-                </div>
-                <datalist id="wtl-units">{% for u in units %}<option value="{{ u }}">{% endfor %}</datalist>
-                <datalist id="wtl-suggest">{% for s in suggestions %}<option value="{{ s }}">{% endfor %}</datalist>
-                <datalist id="wtl-suppliers">{% for s in suppliers %}<option value="{{ s }}">{% endfor %}</datalist>
-                <datalist id="wtl-rooms">{% for d in byKind|reduce((c, k) => c|merge(k), {}) %}{% for i in d %}{% if i.room %}<option value="{{ i.room }}">{% endif %}{% endfor %}{% endfor %}</datalist>
-            </form>
-        </div>
-    </div>
-    <script>
-    (function () {
-        var box = document.getElementById('wtl-rows'), btn = document.getElementById('wtl-addrow');
-        if (!box || !btn) { return; }
-        function addRow() {
-            var lines = box.querySelectorAll('.wtl-line'), last = lines[lines.length - 1];
-            var n = lines.length, row = last.cloneNode(true);
-            row.querySelectorAll('input').forEach(function (inp) {
-                inp.name = inp.name.replace(/rows\[\d+\]/, 'rows[' + n + ']');
-                inp.removeAttribute('autofocus');
-                if (/\[unit\]$/.test(inp.name)) { inp.value = last.querySelector('[name$="[unit]"]').value || box.dataset.unit; } else { inp.value = ''; }
-            });
-            box.appendChild(row);
-            return row;
-        }
-        btn.addEventListener('click', function () { addRow().querySelector('input').focus(); });
-        // automatisch neue leere Zeile, sobald die letzte befüllt wird
-        box.addEventListener('input', function (e) {
-            var lines = box.querySelectorAll('.wtl-line'), last = lines[lines.length - 1];
-            if (last.contains(e.target) && e.target.value !== '') { addRow(); }
-        });
-        // Enter springt in die nächste Zeile statt abzuschicken
-        box.addEventListener('keydown', function (e) {
-            if (e.key !== 'Enter') { return; }
-            e.preventDefault();
-            var inputs = Array.prototype.slice.call(box.querySelectorAll('input'));
-            var i = inputs.indexOf(e.target);
-            var next = inputs[i + (3 - i % 3)];
-            if (next) { next.focus(); }
-        });
-    })();
-    </script>
-
-    {% for date, items in byKind[kind] %}
-        <div class="card mb-2">
-            <div class="card-header py-2"><strong>{{ date|date('d.m.Y', false) }}</strong></div>
-            <div class="list-group list-group-flush">
-                {% for item in items %}
-                    <div class="list-group-item py-2 wtl-row">
-                        {% if kind != 'notiz' %}<div class="wtl-qty">{{ m.qty(item) }}</div>{% endif %}
-                        <div class="wtl-text">
-                            <div style="white-space: pre-line">{{ item.text }}</div>
-                            <div class="small text-secondary">{{ item.room }}{% if item.room and item.supplier %} · {% endif %}{{ item.supplier }}</div>
-                        </div>
-                        {% if kind == 'material' %}
-                            <form method="post" action="{{ path('wtl_site_item_status', {id: item.id}) }}">
-                                <input type="hidden" name="_token" value="{{ token }}">
-                                {% set next = {offen: 'bestellt', bestellt: 'geliefert', geliefert: 'offen'} %}
-                                <input type="hidden" name="status" value="{{ next[item.status]|default('offen') }}">
-                                <button class="btn btn-sm btn-ghost-secondary p-1" title="Weiter auf: {{ next[item.status]|default('offen') }}">{{ m.status_badge(item.status) }}</button>
-                            </form>
-                        {% endif %}
-                        <form method="post" action="{{ path('wtl_site_item_delete', {id: item.id}) }}" onsubmit="return confirm('Eintrag löschen?')">
-                            <input type="hidden" name="_token" value="{{ token }}">
-                            <button class="btn btn-sm btn-ghost-danger p-1" title="Löschen"><i class="fas fa-trash"></i></button>
-                        </form>
-                    </div>
-                {% endfor %}
+{% for sheet in sheets %}
+    <a class="card card-link mb-2" href="{{ path('wtl_site_sheet', {sid: sheet.id}) }}">
+        <div class="card-body py-2 d-flex justify-content-between align-items-center gap-2">
+            <div>
+                <div class="fw-bold">{{ titles[sheet.kind] }} vom {{ sheet.sheet_date|date('d.m.Y', false) }}</div>
+                <div class="small text-secondary">{{ sheet.title }}{% if sheet.title and sheet.supplier %} · {% endif %}{{ sheet.supplier }}</div>
+            </div>
+            <div class="text-end">
+                <span class="badge">{{ sheet.items }} Pos.</span>
+                {% if sheet.kind == 'material' and sheet.open_items > 0 %}<br><span class="badge bg-orange-lt mt-1">{{ sheet.open_items }} offen</span>{% endif %}
             </div>
         </div>
-    {% else %}
-        <div class="text-secondary text-center py-3">Noch nichts eingetragen.</div>
-    {% endfor %}
-</div>
+    </a>
+{% else %}
+    <div class="text-secondary text-center py-3">Noch nichts angelegt.</div>
+{% endfor %}
 {% endblock %}

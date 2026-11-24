@@ -22,7 +22,7 @@
                     <div class="flex-fill">
                         <div>{{ item.text }}</div>
                         <div class="small text-secondary">
-                            {% if item.project %}<a href="{{ path('wtl_site_project', {id: item.project_id, kind: 'material'}) }}">{{ item.project.name }}</a>{% endif %}
+                            {% if item.project %}<a href="{{ item.sheet_id ? path('wtl_site_sheet', {sid: item.sheet_id}) : path('wtl_site_project', {id: item.project_id, kind: 'material'}) }}">{{ item.project.name }}</a>{% endif %}
                             · {{ item.item_date|date('d.m.', false) }}{% if item.room %} · {{ item.room }}{% endif %}
                         </div>
                     </div>

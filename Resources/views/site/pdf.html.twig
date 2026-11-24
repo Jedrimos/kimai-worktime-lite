@@ -17,26 +17,23 @@ td.c { width: 8mm; }
     <div class="doctitle">{{ title }}</div>
     <h1>Baustelle: {{ project.name }}</h1>
     <div class="meta">{% if project.customer %}Kunde: {{ project.customer.name }} · {% endif %}{{ user.displayName }} · Stand {{ now|date('d.m.Y H:i', false) }}</div>
-    {% for kind, label in kinds %}
-        {% if byKind[kind]|length > 0 %}
-            {% if not single %}<h2>{{ label }}</h2>{% endif %}
-            <table>
-                <tr>{% if kind != 'notiz' %}<th style="text-align:right">Menge</th>{% endif %}<th>{{ kind == 'notiz' ? 'Notiz' : 'Bezeichnung' }}</th><th>{{ kind == 'material' ? 'Raum / Großhändler' : 'Raum / Stelle' }}</th>{% if kind == 'material' %}<th>Status</th>{% endif %}</tr>
-                {% set cols = kind == 'material' ? 4 : (kind == 'notiz' ? 2 : 3) %}
-                {% for date, items in byKind[kind] %}
-                    <tr><td colspan="{{ cols }}" class="day">{{ date|date('d.m.Y', false) }}</td></tr>
-                    {% for item in items %}
-                    <tr>
-                        {% if kind != 'notiz' %}<td class="q">{{ m.qty(item) }}</td>{% endif %}
-                        <td>{{ item.text|nl2br }}</td>
-                        <td>{{ item.room }}{% if item.room and item.supplier %} / {% endif %}{{ item.supplier }}</td>
-                        {% if kind == 'material' %}<td>{{ item.status }}</td>{% endif %}
-                    </tr>
-                {% endfor %}{% endfor %}
-            </table>
-        {% endif %}
+    {% for sheet in sheets %}
+        {% set kind = sheet.kind %}
+        <h2>{{ titles[kind] }} vom {{ sheet.sheet_date|date('d.m.Y', false) }}{% if sheet.title %} – {{ sheet.title }}{% endif %}{% if sheet.supplier %} · {{ sheet.supplier }}{% endif %}</h2>
+        <table>
+            <tr>{% if kind != 'notiz' %}<th style="text-align:right">Menge</th>{% endif %}<th>{{ kind == 'notiz' ? 'Notiz' : 'Bezeichnung' }}</th><th>Raum / Stelle</th>{% if kind == 'material' %}<th>Status</th>{% endif %}</tr>
+            {% for item in sheet.items_list %}
+                <tr>
+                    {% if kind != 'notiz' %}<td class="q">{{ m.qty(item) }}</td>{% endif %}
+                    <td>{{ item.text|nl2br }}</td>
+                    <td>{{ item.room }}</td>
+                    {% if kind == 'material' %}<td>{{ item.status }}</td>{% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Noch keine Einträge.</p>
     {% endfor %}
-    {% if byKind|reduce((c, d) => c + d|length, 0) == 0 %}<p>Noch keine Einträge.</p>{% endif %}
 {% else %}
     <div class="doctitle">Materialbestellung</div>
     <h1>Bestellliste – alle Baustellen</h1>

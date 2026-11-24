@@ -25,6 +25,7 @@ final class SiteController extends AbstractController
 {
     public const UNITS = ['Stk', 'm', 'm²', 'm³', 'Rolle', 'Pkg', 'Satz', 'h', 'kg', 'l'];
     public const KIND_LABELS = ['aufmass' => 'Aufmaß', 'material' => 'Material', 'notiz' => 'Notiz'];
+    public const SHEET_TITLES = ['aufmass' => 'Aufmaß', 'material' => 'Materialbestellung', 'notiz' => 'Notizen'];
 
     public function __construct(
         private readonly SiteRepository $repository,
@@ -132,97 +133,116 @@ final class SiteController extends AbstractController
         return ['groups' => $groups];
     }
 
-    #[Route(path: '/{id}', name: 'wtl_site_project', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    #[Route(path: '/{id}', name: 'wtl_site_project', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function project(Request $request, int $id): Response
     {
         $user = $this->getUser();
         $project = $this->loadProject($user, $id);
-        $tz = new \DateTimeZone($user->getTimezone());
-        $kind = (string) $request->query->get('kind', 'aufmass');
-        if (!\array_key_exists($kind, self::KIND_LABELS)) {
-            $kind = 'aufmass';
+        $kind = $this->kind($request->query->get('kind'));
+        $counts = ['aufmass' => 0, 'material' => 0, 'notiz' => 0];
+        foreach ($this->repository->sheetsForProject($user->getId(), $id) as $sheet) {
+            ++$counts[$sheet['kind']];
         }
-
-        if ($request->isMethod('POST')) {
-            if (!$this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
-                $this->flashError('Sitzung abgelaufen, bitte nochmal.');
-
-                return $this->redirectToRoute('wtl_site_project', ['id' => $id, 'kind' => $kind]);
-            }
-            $kind = (string) $request->request->get('kind', $kind);
-            if (!\array_key_exists($kind, self::KIND_LABELS)) {
-                $kind = 'aufmass';
-            }
-            try {
-                $date = new \DateTimeImmutable((string) $request->request->get('date', 'today'), $tz);
-            } catch (\Exception) {
-                $date = new \DateTimeImmutable('today', $tz);
-            }
-            $room = mb_substr(trim((string) $request->request->get('room')), 0, 100);
-            $supplier = $kind === 'material' ? mb_substr(trim((string) $request->request->get('supplier')), 0, 100) : '';
-            $rows = $request->request->all('rows');
-            $added = 0;
-            $lastUnit = null;
-            foreach ($rows as $row) {
-                if (!\is_array($row)) {
-                    continue;
-                }
-                $text = trim((string) ($row['text'] ?? ''));
-                if ($text === '') {
-                    continue;
-                }
-                $qty = trim(str_replace(',', '.', (string) ($row['quantity'] ?? '')));
-                $unit = $kind === 'notiz' ? '' : mb_substr(trim((string) ($row['unit'] ?? '')), 0, 20);
-                $lastUnit = $unit !== '' ? $unit : $lastUnit;
-                $this->repository->add($user->getId(), [
-                    'project_id' => $id,
-                    'item_date' => $date->format('Y-m-d'),
-                    'kind' => $kind,
-                    'quantity' => is_numeric($qty) ? (float) $qty : null,
-                    'unit' => $unit !== '' ? $unit : null,
-                    'text' => mb_substr($text, 0, 500),
-                    'room' => $room !== '' ? $room : null,
-                    'supplier' => $supplier !== '' ? $supplier : null,
-                ]);
-                ++$added;
-            }
-            if ($added === 0) {
-                $this->flashError('Bitte mindestens eine Zeile mit Text ausfüllen.');
-            } else {
-                // Datum, Raum, Einheit und Großhändler für das nächste Mal merken
-                $last = (array) $request->getSession()->get('wtl_site_last', []);
-                if ($lastUnit !== null) {
-                    $last['unit_' . $kind] = $lastUnit;
-                }
-                $last['date'] = $date->format('Y-m-d');
-                $last['room'] = $room;
-                if ($kind === 'material') {
-                    $last['supplier'] = $supplier;
-                }
-                $request->getSession()->set('wtl_site_last', $last);
-            }
-
-            return $this->redirectToRoute('wtl_site_project', ['id' => $id, 'kind' => $kind]);
-        }
-
-        $items = $this->repository->forProject($user->getId(), $id);
-        $byKind = ['aufmass' => [], 'material' => [], 'notiz' => []];
-        foreach ($items as $item) {
-            $byKind[$item['kind']][$item['item_date']][] = $item;
-        }
-        $last = $request->getSession()->get('wtl_site_last', []);
 
         return $this->render('@WorkTimeLite/site/project.html.twig', [
             'project' => $project,
             'kind' => $kind,
             'kinds' => self::KIND_LABELS,
-            'byKind' => $byKind,
-            'units' => self::UNITS,
-            'suggestions' => $this->repository->suggestions($user->getId(), $kind),
-            'suppliers' => $this->repository->suppliers($user->getId()),
-            'last' => $last,
-            'today' => (new \DateTimeImmutable('today', $tz))->format('Y-m-d'),
+            'titles' => self::SHEET_TITLES,
+            'counts' => $counts,
+            'sheets' => $this->repository->sheetsForProject($user->getId(), $id, $kind),
         ]);
+    }
+
+    #[Route(path: '/{id}/new', name: 'wtl_site_sheet_new', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function newSheet(Request $request, int $id): Response
+    {
+        $user = $this->getUser();
+        $project = $this->loadProject($user, $id);
+        $kind = $this->kind($request->query->get('kind'));
+        $tz = new \DateTimeZone($user->getTimezone());
+
+        if ($request->isMethod('POST') && $this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            $date = $this->postDate($request, $tz);
+            $title = mb_substr(trim((string) $request->request->get('title')), 0, 150);
+            $supplier = $kind === 'material' ? mb_substr(trim((string) $request->request->get('supplier')), 0, 100) : '';
+            $sheetId = $this->repository->createSheet($user->getId(), $id, $kind, $date->format('Y-m-d'), $title !== '' ? $title : null, $supplier !== '' ? $supplier : null);
+            $this->addRows($request, $user, $sheetId, $id, $kind, $date->format('Y-m-d'), $supplier);
+
+            return $this->redirectToRoute('wtl_site_sheet', ['sid' => $sheetId]);
+        }
+
+        return $this->render('@WorkTimeLite/site/sheet.html.twig', [
+            'project' => $project,
+            'kind' => $kind,
+            'sheet' => null,
+            'items' => [],
+            'titles' => self::SHEET_TITLES,
+            'today' => (new \DateTimeImmutable('today', $tz))->format('Y-m-d'),
+        ] + $this->formHelpers($request, $user, $kind));
+    }
+
+    #[Route(path: '/sheet/{sid}', name: 'wtl_site_sheet', requirements: ['sid' => '\d+'], methods: ['GET', 'POST'])]
+    public function sheet(Request $request, int $sid): Response
+    {
+        $user = $this->getUser();
+        $sheet = $this->repository->findSheet($user->getId(), $sid) ?? throw $this->createNotFoundException();
+        $project = $this->loadProject($user, (int) $sheet['project_id']);
+        $kind = (string) $sheet['kind'];
+
+        if ($request->isMethod('POST') && $this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            if ($request->request->has('edit_head')) {
+                $date = $this->postDate($request, new \DateTimeZone($user->getTimezone()));
+                $title = mb_substr(trim((string) $request->request->get('title')), 0, 150);
+                $supplier = $kind === 'material' ? mb_substr(trim((string) $request->request->get('supplier')), 0, 100) : '';
+                $this->repository->updateSheet($user->getId(), $sid, $date->format('Y-m-d'), $title !== '' ? $title : null, $supplier !== '' ? $supplier : null);
+            } else {
+                $this->addRows($request, $user, $sid, (int) $sheet['project_id'], $kind, (string) $sheet['sheet_date'], (string) $sheet['supplier']);
+            }
+
+            return $this->redirectToRoute('wtl_site_sheet', ['sid' => $sid]);
+        }
+
+        return $this->render('@WorkTimeLite/site/sheet.html.twig', [
+            'project' => $project,
+            'kind' => $kind,
+            'sheet' => $sheet,
+            'items' => $this->repository->itemsForSheet($user->getId(), $sid),
+            'titles' => self::SHEET_TITLES,
+            'today' => (string) $sheet['sheet_date'],
+        ] + $this->formHelpers($request, $user, $kind));
+    }
+
+    #[Route(path: '/sheet/{sid}/delete', name: 'wtl_site_sheet_delete', requirements: ['sid' => '\d+'], methods: ['POST'])]
+    public function deleteSheet(Request $request, int $sid): Response
+    {
+        $user = $this->getUser();
+        $sheet = $this->repository->findSheet($user->getId(), $sid) ?? throw $this->createNotFoundException();
+        if ($this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            $this->repository->deleteSheet($user->getId(), $sid);
+        }
+
+        return $this->redirectToRoute('wtl_site_project', ['id' => $sheet['project_id'], 'kind' => $sheet['kind']]);
+    }
+
+    #[Route(path: '/sheet/{sid}/pdf', name: 'wtl_site_sheet_pdf', requirements: ['sid' => '\d+'], methods: ['GET'])]
+    public function sheetPdf(int $sid): Response
+    {
+        $user = $this->getUser();
+        $sheet = $this->repository->findSheet($user->getId(), $sid) ?? throw $this->createNotFoundException();
+        $project = $this->loadProject($user, (int) $sheet['project_id']);
+        $sheet['items_list'] = $this->repository->itemsForSheet($user->getId(), $sid);
+        $title = self::SHEET_TITLES[$sheet['kind']];
+
+        return $this->pdfResponse($this->renderView('@WorkTimeLite/site/pdf.html.twig', [
+            'mode' => 'project',
+            'title' => $title,
+            'project' => $project,
+            'sheets' => [$sheet],
+            'titles' => self::SHEET_TITLES,
+            'user' => $user,
+            'now' => new \DateTimeImmutable('now', new \DateTimeZone($user->getTimezone())),
+        ]), $title . ' ' . $project->getName() . ' ' . $sheet['sheet_date']);
     }
 
     #[Route(path: '/{id}/pdf', name: 'wtl_site_project_pdf', requirements: ['id' => '\d+'], methods: ['GET'])]
@@ -232,24 +252,94 @@ final class SiteController extends AbstractController
         $project = $this->loadProject($user, $id);
         $only = (string) $request->query->get('kind', '');
         $only = \array_key_exists($only, self::KIND_LABELS) ? $only : null;
-        $titles = ['aufmass' => 'Aufmaß', 'material' => 'Materialbestellung', 'notiz' => 'Notizen'];
-        $title = $only !== null ? $titles[$only] : 'Baustellenbericht';
-        $byKind = ['aufmass' => [], 'material' => [], 'notiz' => []];
-        foreach ($this->repository->forProject($user->getId(), $id, $only) as $item) {
-            $byKind[$item['kind']][$item['item_date']][] = $item;
+        $title = $only !== null ? self::SHEET_TITLES[$only] : 'Baustellenbericht';
+        $sheets = [];
+        foreach (['aufmass', 'material', 'notiz'] as $k) {
+            if ($only !== null && $only !== $k) {
+                continue;
+            }
+            foreach (array_reverse($this->repository->sheetsForProject($user->getId(), $id, $k)) as $sheet) {
+                $sheet['items_list'] = $this->repository->itemsForSheet($user->getId(), (int) $sheet['id']);
+                $sheets[] = $sheet;
+            }
         }
-        $html = $this->renderView('@WorkTimeLite/site/pdf.html.twig', [
+
+        return $this->pdfResponse($this->renderView('@WorkTimeLite/site/pdf.html.twig', [
             'mode' => 'project',
             'title' => $title,
-            'single' => $only !== null,
             'project' => $project,
-            'byKind' => $byKind,
-            'kinds' => self::KIND_LABELS,
+            'sheets' => $sheets,
+            'titles' => self::SHEET_TITLES,
             'user' => $user,
             'now' => new \DateTimeImmutable('now', new \DateTimeZone($user->getTimezone())),
-        ]);
+        ]), $title . ' ' . $project->getName() . ' ' . date('Y-m-d'));
+    }
 
-        return $this->pdfResponse($html, $title . ' ' . $project->getName() . ' ' . date('Y-m-d'));
+    private function kind(mixed $kind): string
+    {
+        $kind = (string) $kind;
+
+        return \array_key_exists($kind, self::KIND_LABELS) ? $kind : 'aufmass';
+    }
+
+    private function postDate(Request $request, \DateTimeZone $tz): \DateTimeImmutable
+    {
+        try {
+            return new \DateTimeImmutable((string) $request->request->get('date', 'today'), $tz);
+        } catch (\Exception) {
+            return new \DateTimeImmutable('today', $tz);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formHelpers(Request $request, User $user, string $kind): array
+    {
+        return [
+            'units' => self::UNITS,
+            'suggestions' => $this->repository->suggestions($user->getId(), $kind),
+            'suppliers' => $this->repository->suppliers($user->getId()),
+            'defUnit' => (string) (((array) $request->getSession()->get('wtl_site_last', []))['unit_' . $kind] ?? ($kind === 'aufmass' ? 'm' : 'Stk')),
+        ];
+    }
+
+    private function addRows(Request $request, User $user, int $sheetId, int $projectId, string $kind, string $date, string $supplier): int
+    {
+        $added = 0;
+        $lastUnit = null;
+        foreach ($request->request->all('rows') as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+            $text = trim((string) ($row['text'] ?? ''));
+            if ($text === '') {
+                continue;
+            }
+            $qty = trim(str_replace(',', '.', (string) ($row['quantity'] ?? '')));
+            $unit = $kind === 'notiz' ? '' : mb_substr(trim((string) ($row['unit'] ?? '')), 0, 20);
+            $room = mb_substr(trim((string) ($row['room'] ?? '')), 0, 100);
+            $lastUnit = $unit !== '' ? $unit : $lastUnit;
+            $this->repository->add($user->getId(), [
+                'sheet_id' => $sheetId,
+                'project_id' => $projectId,
+                'item_date' => $date,
+                'kind' => $kind,
+                'quantity' => is_numeric($qty) ? (float) $qty : null,
+                'unit' => $unit !== '' ? $unit : null,
+                'text' => mb_substr($text, 0, 500),
+                'room' => $room !== '' ? $room : null,
+                'supplier' => $supplier !== '' ? $supplier : null,
+            ]);
+            ++$added;
+        }
+        if ($lastUnit !== null) {
+            $last = (array) $request->getSession()->get('wtl_site_last', []);
+            $last['unit_' . $kind] = $lastUnit;
+            $request->getSession()->set('wtl_site_last', $last);
+        }
+
+        return $added;
     }
 
     #[Route(path: '/item/{id}/delete', name: 'wtl_site_item_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -286,6 +376,10 @@ final class SiteController extends AbstractController
         }
         if ($item === null) {
             return $this->redirectToRoute('wtl_site');
+        }
+
+        if (!empty($item['sheet_id'])) {
+            return $this->redirectToRoute('wtl_site_sheet', ['sid' => $item['sheet_id']]);
         }
 
         return $this->redirectToRoute('wtl_site_project', ['id' => $item['project_id'], 'kind' => $item['kind']]);

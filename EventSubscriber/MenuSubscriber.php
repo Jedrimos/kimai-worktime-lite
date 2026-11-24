@@ -34,7 +34,7 @@ final class MenuSubscriber implements EventSubscriberInterface
         $site = new MenuItemModel('wtl_site_menu', 'Baustelle', null, [], 'fas fa-hard-hat');
         $site->addChild(new MenuItemModel('wtl_site', 'Baustellen', 'wtl_site', [], 'fas fa-hard-hat'));
         $site->addChild(new MenuItemModel('wtl_site_orders', 'Bestellliste', 'wtl_site_orders', [], 'fas fa-truck'));
-        $site->setChildRoutes(['wtl_site', 'wtl_site_orders', 'wtl_site_project']);
+        $site->setChildRoutes(['wtl_site', 'wtl_site_orders', 'wtl_site_project', 'wtl_site_sheet', 'wtl_site_sheet_new']);
         $root->addChild($site);
         $children = [];
         $inserted = false;
