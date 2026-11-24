@@ -49,6 +49,10 @@ final class Configuration implements ConfigurationInterface
                 ->scalarNode('storage_webdav_url')->defaultValue('')->end()
                 ->scalarNode('storage_webdav_user')->defaultValue('')->end()
                 ->scalarNode('storage_webdav_password')->defaultValue('')->end()
+                // Teil 2
+                ->booleanNode('quick_create')->defaultTrue()->end()
+                ->booleanNode('quick_create_global_activity')->defaultTrue()->end()
+                ->scalarNode('custom_fields')->defaultValue('')->end()
             ->end()
         ->end();
 

@@ -466,6 +466,22 @@
         <source>wtl.cfg.storage_webdav_password</source>
         <target>Ablage WebDAV: Passwort / App-Passwort</target>
       </trans-unit>
+      <trans-unit id="wtl116" resname="wtl.cfg.quick_create">
+        <source>wtl.cfg.quick_create</source>
+        <target>Schnell anlegen: Kunde/Projekt/Tätigkeit direkt im Zeiteintrag anlegen</target>
+      </trans-unit>
+      <trans-unit id="wtl117" resname="wtl.cfg.quick_create_global_activity">
+        <source>wtl.cfg.quick_create_global_activity</source>
+        <target>Schnell anlegen: neue Tätigkeiten für alle Projekte (global) anlegen</target>
+      </trans-unit>
+      <trans-unit id="wtl118" resname="wtl.cfg.custom_fields">
+        <source>wtl.cfg.custom_fields</source>
+        <target>Eigene Felder für Zeiteinträge (eine Zeile pro Feld)</target>
+      </trans-unit>
+      <trans-unit id="wtl119" resname="wtl.cfg.custom_fields.help">
+        <source>wtl.cfg.custom_fields.help</source>
+        <target>Format: Name | Typ [| pflicht]. Typen: text, langtext, ja/nein, auswahl: A, B, C. Die Felder erscheinen im Zeiteintrag und lassen sich in Exportvorlagen als Spalte wählen. Umbenennen erzeugt ein neues Feld.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -9,6 +9,8 @@ Kleine, kostenlose Arbeitszeit-Erweiterung für [Kimai](https://www.kimai.org) (
 - **Feiertage** aller Bundesländer (plus AT/CH), optional Mariä Himmelfahrt.
 - **Arbeitszeitkonto**: Überstunden gesamt seit dem ersten Arbeitstag, Urlaub/Krank werden mit dem Abwesenheitswert verrechnet.
 - **Monatsabschluss** (⋯-Menü bzw. Rechtsklick auf die Monatszeile): Vorschau des Stundenzettels, Monat sperren, per E-Mail senden, in einer Ablage speichern (Server-Ordner oder WebDAV, z. B. Nextcloud) und herunterladen – in einem Rutsch. Entsperren ebenfalls über das Menü.
+- **Eigene Felder** für Zeiteinträge (z. B. `Regie | ja/nein`, `Fahrzeug | auswahl: Crafter, Caddy`, `Tätigkeitsbericht | langtext`) – im Formular und als Spalte in Exportvorlagen.
+- **Schnell anlegen**: Kunde, Projekt oder Tätigkeit direkt im Zeiteintrag tippen → „+ „Name“ anlegen“.
 - **Bequeme Zeiteingabe**: `7`, `7.00`, `7,00`, `700` → `07:00`. Optional in Dauer-Feldern `7.30` → 7 h 30 min.
 
 ## Installation
