@@ -78,8 +78,17 @@ final class SiteController extends AbstractController
             }
         }
 
+        $customers = [];
+        foreach ($projects as $project) {
+            $c = $project->getCustomer();
+            $key = $c?->getId() ?? 0;
+            $customers[$key] ??= ['name' => $c?->getName() ?? '–', 'projects' => []];
+            $customers[$key]['projects'][] = ['id' => $project->getId(), 'name' => $project->getName()];
+        }
+        uasort($customers, fn ($a, $b) => strnatcasecmp($a['name'], $b['name']));
+
         return $this->render('@WorkTimeLite/site/index.html.twig', [
-            'projects' => $projects,
+            'customers' => $customers,
             'recent' => $recent,
             'openCount' => \count($this->repository->openMaterial($user->getId())),
         ]);
