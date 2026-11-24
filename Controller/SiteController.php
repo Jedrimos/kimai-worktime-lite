@@ -7,6 +7,7 @@ use App\Entity\Project;
 use App\Entity\User;
 use App\Pdf\HtmlToPdfConverter;
 use App\Repository\ProjectRepository;
+use App\Repository\TimesheetRepository;
 use App\Repository\Query\ProjectQuery;
 use KimaiPlugin\WorkTimeLiteBundle\Service\Settings;
 use KimaiPlugin\WorkTimeLiteBundle\Service\SiteRepository;
@@ -32,6 +33,7 @@ final class SiteController extends AbstractController
         private readonly ProjectRepository $projectRepository,
         private readonly HtmlToPdfConverter $pdfConverter,
         private readonly Settings $settings,
+        private readonly TimesheetRepository $timesheetRepository,
     )
     {
     }
@@ -88,7 +90,23 @@ final class SiteController extends AbstractController
         }
         uasort($customers, fn ($a, $b) => strnatcasecmp($a['name'], $b['name']));
 
+        // Baustellen, auf denen ich zuletzt war (aus meinen Zeiten)
+        $since = (new \DateTimeImmutable('-90 days'))->format('Y-m-d');
+        $rows = $this->timesheetRepository->createQueryBuilder('t')
+            ->select('IDENTITY(t.project) pid, MAX(t.date) last, SUM(t.duration) total')
+            ->where('t.user = :user')->andWhere('t.date >= :since')
+            ->setParameter('user', $user->getId())->setParameter('since', $since)
+            ->groupBy('t.project')->orderBy('last', 'DESC')->setMaxResults(15)
+            ->getQuery()->getArrayResult();
+        $visited = [];
+        foreach ($rows as $r) {
+            if (isset($projects[(int) $r['pid']])) {
+                $visited[] = ['project' => $projects[(int) $r['pid']], 'last' => $r['last'], 'total' => (int) $r['total']];
+            }
+        }
+
         return $this->render('@WorkTimeLite/site/index.html.twig', [
+            'visited' => $visited,
             'customers' => $customers,
             'recent' => $recent,
             'openCount' => \count($this->repository->openMaterial($user->getId())),
@@ -138,13 +156,17 @@ final class SiteController extends AbstractController
     {
         $user = $this->getUser();
         $project = $this->loadProject($user, $id);
-        $kind = $this->kind($request->query->get('kind'));
+        $kind = $request->query->has('kind') ? $this->kind($request->query->get('kind')) : 'overview';
         $counts = ['aufmass' => 0, 'material' => 0, 'notiz' => 0];
-        foreach ($this->repository->sheetsForProject($user->getId(), $id) as $sheet) {
+        $openMaterial = 0;
+        $allSheets = $this->repository->sheetsForProject($user->getId(), $id);
+        foreach ($allSheets as $sheet) {
             ++$counts[$sheet['kind']];
+            $openMaterial += (int) $sheet['open_items'];
         }
 
         return $this->render('@WorkTimeLite/site/project.html.twig', [
+            'overview' => $kind === 'overview' ? $this->overview($user, $project) + ['openMaterial' => $openMaterial, 'sheets' => $allSheets] : null,
             'project' => $project,
             'kind' => $kind,
             'kinds' => self::KIND_LABELS,
@@ -273,6 +295,42 @@ final class SiteController extends AbstractController
             'user' => $user,
             'now' => new \DateTimeImmutable('now', new \DateTimeZone($user->getTimezone())),
         ]), $title . ' ' . $project->getName() . ' ' . date('Y-m-d'));
+    }
+
+    /**
+     * Was für den Monteur zählt: Adresse, Ansprechpartner, Infos, eigene Stunden.
+     *
+     * @return array<string, mixed>
+     */
+    private function overview(User $user, Project $project): array
+    {
+        $customer = $project->getCustomer();
+        $place = array_filter([$customer?->getAddressLine1(), trim(($customer?->getPostCode() ?? '') . ' ' . ($customer?->getCity() ?? ''))]);
+        $address = $place !== [] ? implode(', ', $place) : trim((string) $customer?->getAddress());
+        // Projekte heißen oft wie die Adresse ("Musterstr. 5") – dann die nehmen
+        $mapsQuery = preg_match('/\d/', (string) $project->getName()) ? preg_replace('/\s*\(.*\)\s*$/', '', (string) $project->getName()) . ($customer?->getCity() ? ', ' . $customer->getCity() : '') : $address;
+
+        $qb = $this->timesheetRepository->createQueryBuilder('t');
+        $stats = $qb->select('SUM(t.duration) total, COUNT(DISTINCT t.date) days, MIN(t.date) first, MAX(t.date) last')
+            ->where('t.user = :user')->andWhere('t.project = :project')
+            ->setParameter('user', $user->getId())->setParameter('project', $project->getId())
+            ->getQuery()->getSingleResult();
+
+        $recent = $this->timesheetRepository->createQueryBuilder('t')
+            ->where('t.user = :user')->andWhere('t.project = :project')
+            ->setParameter('user', $user->getId())->setParameter('project', $project->getId())
+            ->orderBy('t.begin', 'DESC')->setMaxResults(8)
+            ->getQuery()->getResult();
+
+        return [
+            'customer' => $customer,
+            'address' => $address,
+            'mapsQuery' => $mapsQuery !== '' ? $mapsQuery : null,
+            'phone' => $customer?->getMobile() ?: $customer?->getPhone(),
+            'phone2' => $customer?->getMobile() && $customer?->getPhone() ? $customer->getPhone() : null,
+            'stats' => $stats,
+            'recent' => $recent,
+        ];
     }
 
     private function kind(mixed $kind): string

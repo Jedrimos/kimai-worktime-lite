@@ -42,8 +42,23 @@
     </div>
 </a>
 
+{% if visited|length > 0 %}
+    <h3 class="mb-2">Zuletzt vor Ort</h3>
+    <div class="list-group mb-3">
+        {% for v in visited %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ path('wtl_site_project', {id: v.project.id}) }}">
+                <div>
+                    <div class="fw-bold">{{ v.project.name }}</div>
+                    {% if v.project.customer and v.project.customer.name != v.project.name %}<div class="text-secondary small">{{ v.project.customer.name }}</div>{% endif %}
+                </div>
+                <div class="text-end small text-secondary">{{ v.last|date('d.m.Y', false) }}<br>{{ v.total|duration }} h</div>
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}
+
 {% if recent|length > 0 %}
-    <h3 class="mb-2">Zuletzt bearbeitet</h3>
+    <h3 class="mb-2">Zuletzt Zettel bearbeitet</h3>
     <div class="list-group mb-3">
         {% for r in recent %}
             <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ path('wtl_site_project', {id: r.project_id}) }}">
