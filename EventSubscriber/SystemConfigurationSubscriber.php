@@ -74,6 +74,7 @@ final class SystemConfigurationSubscriber implements EventSubscriberInterface
         // Schnell anlegen + eigene Felder
         $config[] = $this->cfg('quick_create')->setType(CheckboxType::class);
         $config[] = $this->cfg('quick_create_global_activity')->setType(CheckboxType::class);
+        $config[] = $this->cfg('auto_team')->setType(CheckboxType::class);
         $config[] = $this->cfg('custom_fields')->setType(TextareaType::class)->setOptions([
             'attr' => ['rows' => 6, 'placeholder' => "Regie | ja/nein\nBaustelle | text\nFahrzeug | auswahl: Crafter, Caddy\nTätigkeitsbericht | langtext"],
             'help' => 'wtl.cfg.custom_fields.help',

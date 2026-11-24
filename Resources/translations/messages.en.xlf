@@ -538,6 +538,10 @@
         <source>wtl.cfg.zoll_employer</source>
         <target>Meine Woche (Zoll-Nachweis): Arbeitgeber mit Anschrift</target>
       </trans-unit>
+      <trans-unit id="wtl134" resname="wtl.cfg.auto_team">
+        <source>wtl.cfg.auto_team</source>
+        <target>Neue Kunden/Projekte/Tätigkeiten automatisch den Teams des Erstellers zuweisen (trennt z. B. Arbeitgeber und Nebengewerbe)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
