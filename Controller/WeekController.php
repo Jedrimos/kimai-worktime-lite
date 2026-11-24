@@ -144,7 +144,7 @@ final class WeekController extends AbstractController
             'monday' => $monday,
             'sunday' => $sunday,
             'weekTotal' => $weekTotal,
-            'employer' => $this->settings->string('zoll_employer'),
+            'employer' => trim((string) $user->getPreferenceValue('wtl_employer', '', false)) ?: $this->settings->string('zoll_employer'),
             'prev' => $monday->modify('-7 days')->format('Y-m-d'),
             'next' => $monday->modify('+7 days')->format('Y-m-d'),
             'isCurrent' => $monday->format('Y-m-d') === (new \DateTimeImmutable('today', $tz))->modify('monday this week')->format('Y-m-d'),

@@ -562,6 +562,18 @@
         <source>wtl.cfg.smtp_from</source>
         <target>Eigener Mailversand: Absender-Adresse (leer = Benutzer)</target>
       </trans-unit>
+      <trans-unit id="wtl140" resname="wtl.pref.employer">
+        <source>wtl.pref.employer</source>
+        <target>Arbeitgeber für „Meine Woche“ (Name, Anschrift)</target>
+      </trans-unit>
+      <trans-unit id="wtl141" resname="wtl.pref.employer.help">
+        <source>wtl.pref.employer.help</source>
+        <target>Leer = Wert aus den WorkTime-Lite-Einstellungen. Beim Nebengewerbe z. B. deine eigene Firma eintragen.</target>
+      </trans-unit>
+      <trans-unit id="wtl142" resname="worktime_lite">
+        <source>worktime_lite</source>
+        <target>WorkTime Lite</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
