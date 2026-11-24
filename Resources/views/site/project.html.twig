@@ -14,7 +14,8 @@
     <div class="d-flex gap-2 mb-3 flex-wrap">
         <a class="btn" href="{{ path('wtl_site') }}"><i class="fas fa-chevron-left me-1"></i>Baustellen</a>
         <a class="btn" href="{{ path('wtl_site_orders') }}"><i class="fas fa-truck me-1"></i>Bestellliste</a>
-        <a class="btn btn-primary ms-auto" href="{{ path('wtl_site_project_pdf', {id: project.id}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF</a>
+        <a class="btn btn-primary ms-auto" href="{{ path('wtl_site_project_pdf', {id: project.id, kind: kind}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF {{ kind == 'material' ? 'Materialbestellung' : kinds[kind] }}</a>
+        <a class="btn" href="{{ path('wtl_site_project_pdf', {id: project.id}) }}" target="_blank" title="Alles in einem PDF"><i class="fas fa-file-pdf me-1"></i>Alles</a>
     </div>
     {% if project.customer %}<div class="text-secondary mb-2">{{ project.customer.name }}</div>{% endif %}
 

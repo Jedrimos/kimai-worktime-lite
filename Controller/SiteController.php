@@ -208,16 +208,22 @@ final class SiteController extends AbstractController
     }
 
     #[Route(path: '/{id}/pdf', name: 'wtl_site_project_pdf', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function projectPdf(int $id): Response
+    public function projectPdf(Request $request, int $id): Response
     {
         $user = $this->getUser();
         $project = $this->loadProject($user, $id);
+        $only = (string) $request->query->get('kind', '');
+        $only = \array_key_exists($only, self::KIND_LABELS) ? $only : null;
+        $titles = ['aufmass' => 'Aufmaß', 'material' => 'Materialbestellung', 'notiz' => 'Notizen'];
+        $title = $only !== null ? $titles[$only] : 'Baustellenbericht';
         $byKind = ['aufmass' => [], 'material' => [], 'notiz' => []];
-        foreach ($this->repository->forProject($user->getId(), $id) as $item) {
+        foreach ($this->repository->forProject($user->getId(), $id, $only) as $item) {
             $byKind[$item['kind']][$item['item_date']][] = $item;
         }
         $html = $this->renderView('@WorkTimeLite/site/pdf.html.twig', [
             'mode' => 'project',
+            'title' => $title,
+            'single' => $only !== null,
             'project' => $project,
             'byKind' => $byKind,
             'kinds' => self::KIND_LABELS,
@@ -225,7 +231,7 @@ final class SiteController extends AbstractController
             'now' => new \DateTimeImmutable('now', new \DateTimeZone($user->getTimezone())),
         ]);
 
-        return $this->pdfResponse($html, 'Baustelle ' . $project->getName() . ' ' . date('Y-m-d'));
+        return $this->pdfResponse($html, $title . ' ' . $project->getName() . ' ' . date('Y-m-d'));
     }
 
     #[Route(path: '/item/{id}/delete', name: 'wtl_site_item_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
