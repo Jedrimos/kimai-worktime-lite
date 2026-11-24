@@ -74,7 +74,7 @@
                         <div class="list-group-item">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <div class="fw-bold">{{ row.date|format_date(pattern: 'EEE') }} {{ row.date|date('d.m.Y') }}</div>
+                                    <div class="fw-bold">{{ row.date|format_date(pattern: 'EEE') }} {{ row.date|date('d.m.Y', false) }}</div>
                                     <div class="small text-secondary">
                                         {{ ('wtl.type.' ~ row.type)|trans }}
                                         {% if row.fraction < 1 %} · ½ {{ 'wtl.day'|trans }}{% endif %}
@@ -85,7 +85,7 @@
                                     {% if row.locked %}
                                         <i class="fas fa-lock text-secondary" title="{{ 'wtl.close.is_locked'|trans }}"></i>
                                     {% else %}
-                                        <form method="post" action="{{ path('wtl_absence_delete', {id: row.id, user: profile.id, year: year}) }}" onsubmit="return confirm('Abwesenheit am {{ row.date|date('d.m.Y') }} löschen?');">
+                                        <form method="post" action="{{ path('wtl_absence_delete', {id: row.id, user: profile.id, year: year}) }}" onsubmit="return confirm('Abwesenheit am {{ row.date|date('d.m.Y', false) }} löschen?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('wtl_absence_delete') }}">
                                             <button type="submit" class="btn btn-sm btn-ghost-danger" title="{{ 'delete'|trans }}"><i class="fas fa-trash"></i></button>
                                         </form>

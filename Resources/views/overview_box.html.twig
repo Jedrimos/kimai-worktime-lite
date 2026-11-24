@@ -17,7 +17,7 @@
                 <div class="text-secondary small">{{ 'wtl.overview.balance'|trans }}</div>
                 <div class="h1 mb-0">{{ work_times_result(0, balance, false) }}</div>
                 <div class="small text-secondary">
-                    {% if startDay %}{{ 'wtl.overview.since'|trans }} {{ startDay|date('d.m.Y') }}{% else %}{{ 'wtl.overview.no_start'|trans }}{% endif %}
+                    {% if startDay %}{{ 'wtl.overview.since'|trans }} {{ startDay|date('d.m.Y', false) }}{% else %}{{ 'wtl.overview.no_start'|trans }}{% endif %}
                 </div>
             </div>
             <div class="col-6 col-md-3">
@@ -49,7 +49,7 @@
                 <summary class="small text-secondary">{{ 'wtl.overview.holidays'|trans }} {{ shownYear }} ({{ holidays|length }})</summary>
                 <div class="small mt-2">
                     {% for h in holidays %}
-                        <div>{{ h.date|date('d.m.') }} {{ h.name }}</div>
+                        <div>{{ h.date|date('d.m.', false) }} {{ h.name }}</div>
                     {% endfor %}
                 </div>
             </details>
