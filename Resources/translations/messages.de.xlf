@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="de" datatype="plaintext" original="messages.de.xlf">
+    <body>
+      <trans-unit id="wtl0" resname="wtl.settings">
+        <source>wtl.settings</source>
+        <target>WorkTime Lite</target>
+      </trans-unit>
+      <trans-unit id="wtl1" resname="wtl.days">
+        <source>wtl.days</source>
+        <target>Tage</target>
+      </trans-unit>
+      <trans-unit id="wtl2" resname="wtl.day">
+        <source>wtl.day</source>
+        <target>Tag</target>
+      </trans-unit>
+      <trans-unit id="wtl3" resname="wtl.balance">
+        <source>wtl.balance</source>
+        <target>Saldo</target>
+      </trans-unit>
+      <trans-unit id="wtl4" resname="wtl.work_start_day">
+        <source>wtl.work_start_day</source>
+        <target>Erster Arbeitstag</target>
+      </trans-unit>
+      <trans-unit id="wtl5" resname="wtl.work_start_day.help">
+        <source>wtl.work_start_day.help</source>
+        <target>Vorher werden keine Sollstunden gerechnet.</target>
+      </trans-unit>
+      <trans-unit id="wtl6" resname="wtl.work_last_day">
+        <source>wtl.work_last_day</source>
+        <target>Letzter Arbeitstag</target>
+      </trans-unit>
+      <trans-unit id="wtl7" resname="wtl.holidays_per_year">
+        <source>wtl.holidays_per_year</source>
+        <target>Urlaubstage pro Jahr</target>
+      </trans-unit>
+      <trans-unit id="wtl8" resname="wtl.absence_mode">
+        <source>wtl.absence_mode</source>
+        <target>Wert eines Abwesenheitstages</target>
+      </trans-unit>
+      <trans-unit id="wtl9" resname="wtl.absence_mode.auto">
+        <source>wtl.absence_mode.auto</source>
+        <target>Automatisch: Wochenstunden ÷ Arbeitstage</target>
+      </trans-unit>
+      <trans-unit id="wtl10" resname="wtl.absence_mode.fixed">
+        <source>wtl.absence_mode.fixed</source>
+        <target>Fester Wert</target>
+      </trans-unit>
+      <trans-unit id="wtl11" resname="wtl.absence_mode.help">
+        <source>wtl.absence_mode.help</source>
+        <target>So viel zählt ein Urlaubs- oder Krankheitstag im Arbeitszeitkonto (z.B. 39 h ÷ 5 = 7:48).</target>
+      </trans-unit>
+      <trans-unit id="wtl12" resname="wtl.absence_value">
+        <source>wtl.absence_value</source>
+        <target>Fester Wert pro Abwesenheitstag</target>
+      </trans-unit>
+      <trans-unit id="wtl13" resname="wtl.absence_value.help">
+        <source>wtl.absence_value.help</source>
+        <target>Nur bei „Fester Wert“, z.B. 7:48</target>
+      </trans-unit>
+      <trans-unit id="wtl14" resname="wtl.holiday_region">
+        <source>wtl.holiday_region</source>
+        <target>Feiertage</target>
+      </trans-unit>
+      <trans-unit id="wtl15" resname="wtl.holiday_region.none">
+        <source>wtl.holiday_region.none</source>
+        <target>keine Feiertage berücksichtigen</target>
+      </trans-unit>
+      <trans-unit id="wtl16" resname="wtl.holiday_assumption">
+        <source>wtl.holiday_assumption</source>
+        <target>Mariä Himmelfahrt (15.08.) ist Feiertag</target>
+      </trans-unit>
+      <trans-unit id="wtl17" resname="wtl.holiday_assumption.help">
+        <source>wtl.holiday_assumption.help</source>
+        <target>In Bayern nur in Gemeinden mit überwiegend katholischer Bevölkerung.</target>
+      </trans-unit>
+      <trans-unit id="wtl18" resname="wtl.balance_start">
+        <source>wtl.balance_start</source>
+        <target>Startsaldo</target>
+      </trans-unit>
+      <trans-unit id="wtl19" resname="wtl.balance_start.help">
+        <source>wtl.balance_start.help</source>
+        <target>Überstunden (+) oder Minusstunden (-) vor Beginn der Aufzeichnung, z.B. 12:30 oder -3:00</target>
+      </trans-unit>
+      <trans-unit id="wtl20" resname="wtl.type.vacation">
+        <source>wtl.type.vacation</source>
+        <target>Urlaub</target>
+      </trans-unit>
+      <trans-unit id="wtl21" resname="wtl.type.sick">
+        <source>wtl.type.sick</source>
+        <target>Krank</target>
+      </trans-unit>
+      <trans-unit id="wtl22" resname="wtl.type.overtime">
+        <source>wtl.type.overtime</source>
+        <target>Überstundenabbau</target>
+      </trans-unit>
+      <trans-unit id="wtl23" resname="wtl.type.other">
+        <source>wtl.type.other</source>
+        <target>Sonstige Abwesenheit</target>
+      </trans-unit>
+      <trans-unit id="wtl24" resname="wtl.summary.work">
+        <source>wtl.summary.work</source>
+        <target>Arbeitszeit</target>
+      </trans-unit>
+      <trans-unit id="wtl25" resname="wtl.summary.vacation">
+        <source>wtl.summary.vacation</source>
+        <target>Urlaub</target>
+      </trans-unit>
+      <trans-unit id="wtl26" resname="wtl.summary.sick">
+        <source>wtl.summary.sick</source>
+        <target>Krank</target>
+      </trans-unit>
+      <trans-unit id="wtl27" resname="wtl.summary.overtime">
+        <source>wtl.summary.overtime</source>
+        <target>Überstundenabbau</target>
+      </trans-unit>
+      <trans-unit id="wtl28" resname="wtl.summary.other">
+        <source>wtl.summary.other</source>
+        <target>Sonstige Abwesenheit</target>
+      </trans-unit>
+      <trans-unit id="wtl29" resname="wtl.summary.holiday">
+        <source>wtl.summary.holiday</source>
+        <target>Feiertage</target>
+      </trans-unit>
+      <trans-unit id="wtl30" resname="wtl.action.close">
+        <source>wtl.action.close</source>
+        <target>Monat abschließen …</target>
+      </trans-unit>
+      <trans-unit id="wtl31" resname="wtl.action.send">
+        <source>wtl.action.send</source>
+        <target>Stundenzettel senden …</target>
+      </trans-unit>
+      <trans-unit id="wtl32" resname="wtl.action.send_again">
+        <source>wtl.action.send_again</source>
+        <target>Stundenzettel erneut senden …</target>
+      </trans-unit>
+      <trans-unit id="wtl33" resname="wtl.action.pdf">
+        <source>wtl.action.pdf</source>
+        <target>Stundenzettel anzeigen</target>
+      </trans-unit>
+      <trans-unit id="wtl34" resname="wtl.action.unlock">
+        <source>wtl.action.unlock</source>
+        <target>Monat entsperren</target>
+      </trans-unit>
+      <trans-unit id="wtl35" resname="wtl.action.absence">
+        <source>wtl.action.absence</source>
+        <target>Abwesenheit</target>
+      </trans-unit>
+      <trans-unit id="wtl36" resname="wtl.close.title">
+        <source>wtl.close.title</source>
+        <target>Monatsabschluss</target>
+      </trans-unit>
+      <trans-unit id="wtl37" resname="wtl.close.is_locked">
+        <source>wtl.close.is_locked</source>
+        <target>Dieser Monat ist gesperrt.</target>
+      </trans-unit>
+      <trans-unit id="wtl38" resname="wtl.close.not_lockable">
+        <source>wtl.close.not_lockable</source>
+        <target>Sperren ist erst nach Monatsende möglich.</target>
+      </trans-unit>
+      <trans-unit id="wtl39" resname="wtl.close.what">
+        <source>wtl.close.what</source>
+        <target>Was soll passieren?</target>
+      </trans-unit>
+      <trans-unit id="wtl40" resname="wtl.close.template">
+        <source>wtl.close.template</source>
+        <target>Vorlage</target>
+      </trans-unit>
+      <trans-unit id="wtl41" resname="wtl.close.filename">
+        <source>wtl.close.filename</source>
+        <target>Dateiname</target>
+      </trans-unit>
+      <trans-unit id="wtl42" resname="wtl.close.mail">
+        <source>wtl.close.mail</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="wtl43" resname="wtl.close.submit">
+        <source>wtl.close.submit</source>
+        <target>Ausführen</target>
+      </trans-unit>
+      <trans-unit id="wtl44" resname="wtl.close.back">
+        <source>wtl.close.back</source>
+        <target>Zurück</target>
+      </trans-unit>
+      <trans-unit id="wtl45" resname="wtl.close.preview">
+        <source>wtl.close.preview</source>
+        <target>Vorschau</target>
+      </trans-unit>
+      <trans-unit id="wtl46" resname="wtl.close.open">
+        <source>wtl.close.open</source>
+        <target>Öffnen</target>
+      </trans-unit>
+      <trans-unit id="wtl47" resname="wtl.close.preview_mobile">
+        <source>wtl.close.preview_mobile</source>
+        <target>Die Vorschau kann hier nicht angezeigt werden.</target>
+      </trans-unit>
+      <trans-unit id="wtl48" resname="wtl.close.download_started">
+        <source>wtl.close.download_started</source>
+        <target>Der Download wurde gestartet.</target>
+      </trans-unit>
+      <trans-unit id="wtl49" resname="wtl.close.download_again">
+        <source>wtl.close.download_again</source>
+        <target>Erneut herunterladen</target>
+      </trans-unit>
+      <trans-unit id="wtl50" resname="wtl.close.do_lock">
+        <source>wtl.close.do_lock</source>
+        <target>Monat sperren (vorherige offene Monate werden mitgesperrt)</target>
+      </trans-unit>
+      <trans-unit id="wtl51" resname="wtl.close.do_mail">
+        <source>wtl.close.do_mail</source>
+        <target>Per E-Mail senden</target>
+      </trans-unit>
+      <trans-unit id="wtl52" resname="wtl.close.do_store">
+        <source>wtl.close.do_store</source>
+        <target>In der Ablage speichern</target>
+      </trans-unit>
+      <trans-unit id="wtl53" resname="wtl.close.do_download">
+        <source>wtl.close.do_download</source>
+        <target>Herunterladen</target>
+      </trans-unit>
+      <trans-unit id="wtl54" resname="wtl.mail.to">
+        <source>wtl.mail.to</source>
+        <target>An</target>
+      </trans-unit>
+      <trans-unit id="wtl55" resname="wtl.mail.to.help">
+        <source>wtl.mail.to.help</source>
+        <target>Mehrere Adressen mit Komma trennen</target>
+      </trans-unit>
+      <trans-unit id="wtl56" resname="wtl.mail.cc">
+        <source>wtl.mail.cc</source>
+        <target>Kopie (CC)</target>
+      </trans-unit>
+      <trans-unit id="wtl57" resname="wtl.mail.subject">
+        <source>wtl.mail.subject</source>
+        <target>Betreff</target>
+      </trans-unit>
+      <trans-unit id="wtl58" resname="wtl.mail.body">
+        <source>wtl.mail.body</source>
+        <target>Text</target>
+      </trans-unit>
+      <trans-unit id="wtl59" resname="wtl.absence.title">
+        <source>wtl.absence.title</source>
+        <target>Abwesenheiten</target>
+      </trans-unit>
+      <trans-unit id="wtl60" resname="wtl.absence.type">
+        <source>wtl.absence.type</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="wtl61" resname="wtl.absence.begin">
+        <source>wtl.absence.begin</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="wtl62" resname="wtl.absence.end">
+        <source>wtl.absence.end</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="wtl63" resname="wtl.absence.end.help">
+        <source>wtl.absence.end.help</source>
+        <target>Leer = nur ein Tag</target>
+      </trans-unit>
+      <trans-unit id="wtl64" resname="wtl.absence.half_day">
+        <source>wtl.absence.half_day</source>
+        <target>Halber Tag</target>
+      </trans-unit>
+      <trans-unit id="wtl65" resname="wtl.absence.not_configured">
+        <source>wtl.absence.not_configured</source>
+        <target>Es sind noch keine Abwesenheitsarten eingerichtet (Projekt + Tätigkeit je Art).</target>
+      </trans-unit>
+      <trans-unit id="wtl66" resname="wtl.absence.vacation_left">
+        <source>wtl.absence.vacation_left</source>
+        <target>Resturlaub</target>
+      </trans-unit>
+      <trans-unit id="wtl67" resname="wtl.absence.day_value">
+        <source>wtl.absence.day_value</source>
+        <target>Wert pro Tag</target>
+      </trans-unit>
+      <trans-unit id="wtl68" resname="wtl.absence.per_day">
+        <source>wtl.absence.per_day</source>
+        <target>pro Abwesenheitstag</target>
+      </trans-unit>
+      <trans-unit id="wtl69" resname="wtl.absence.new">
+        <source>wtl.absence.new</source>
+        <target>Neue Abwesenheit</target>
+      </trans-unit>
+      <trans-unit id="wtl70" resname="wtl.absence.save">
+        <source>wtl.absence.save</source>
+        <target>Eintragen</target>
+      </trans-unit>
+      <trans-unit id="wtl71" resname="wtl.absence.hint">
+        <source>wtl.absence.hint</source>
+        <target>Wochenenden, freie Tage, Feiertage und gesperrte Monate werden automatisch übersprungen.</target>
+      </trans-unit>
+      <trans-unit id="wtl72" resname="wtl.absence.list">
+        <source>wtl.absence.list</source>
+        <target>Abwesenheiten</target>
+      </trans-unit>
+      <trans-unit id="wtl73" resname="wtl.absence.empty">
+        <source>wtl.absence.empty</source>
+        <target>Keine Abwesenheiten in diesem Jahr.</target>
+      </trans-unit>
+      <trans-unit id="wtl74" resname="wtl.overview.title">
+        <source>wtl.overview.title</source>
+        <target>Arbeitszeitkonto &amp; Urlaub</target>
+      </trans-unit>
+      <trans-unit id="wtl75" resname="wtl.overview.balance">
+        <source>wtl.overview.balance</source>
+        <target>Überstunden gesamt</target>
+      </trans-unit>
+      <trans-unit id="wtl76" resname="wtl.overview.since">
+        <source>wtl.overview.since</source>
+        <target>seit</target>
+      </trans-unit>
+      <trans-unit id="wtl77" resname="wtl.overview.no_start">
+        <source>wtl.overview.no_start</source>
+        <target>ersten Arbeitstag im Vertrag eintragen</target>
+      </trans-unit>
+      <trans-unit id="wtl78" resname="wtl.overview.per_week">
+        <source>wtl.overview.per_week</source>
+        <target>pro Woche</target>
+      </trans-unit>
+      <trans-unit id="wtl79" resname="wtl.overview.holidays">
+        <source>wtl.overview.holidays</source>
+        <target>Feiertage</target>
+      </trans-unit>
+      <trans-unit id="wtl80" resname="wtl.cfg.input_time_normalize">
+        <source>wtl.cfg.input_time_normalize</source>
+        <target>Bequeme Uhrzeit-Eingabe (7.00, 700 oder 7 → 07:00)</target>
+      </trans-unit>
+      <trans-unit id="wtl81" resname="wtl.cfg.input_duration_dot_minutes">
+        <source>wtl.cfg.input_duration_dot_minutes</source>
+        <target>Dauer-Felder: Punkt/Komma trennt Stunden und Minuten (7.30 → 7:30 statt 7,3 h)</target>
+      </trans-unit>
+      <trans-unit id="wtl82" resname="wtl.cfg.absence_vacation_project">
+        <source>wtl.cfg.absence_vacation_project</source>
+        <target>Urlaub: Projekt</target>
+      </trans-unit>
+      <trans-unit id="wtl83" resname="wtl.cfg.absence_vacation_activity">
+        <source>wtl.cfg.absence_vacation_activity</source>
+        <target>Urlaub: Tätigkeit</target>
+      </trans-unit>
+      <trans-unit id="wtl84" resname="wtl.cfg.absence_sick_project">
+        <source>wtl.cfg.absence_sick_project</source>
+        <target>Krank: Projekt</target>
+      </trans-unit>
+      <trans-unit id="wtl85" resname="wtl.cfg.absence_sick_activity">
+        <source>wtl.cfg.absence_sick_activity</source>
+        <target>Krank: Tätigkeit</target>
+      </trans-unit>
+      <trans-unit id="wtl86" resname="wtl.cfg.absence_overtime_project">
+        <source>wtl.cfg.absence_overtime_project</source>
+        <target>Überstundenabbau: Projekt</target>
+      </trans-unit>
+      <trans-unit id="wtl87" resname="wtl.cfg.absence_overtime_activity">
+        <source>wtl.cfg.absence_overtime_activity</source>
+        <target>Überstundenabbau: Tätigkeit</target>
+      </trans-unit>
+      <trans-unit id="wtl88" resname="wtl.cfg.absence_other_project">
+        <source>wtl.cfg.absence_other_project</source>
+        <target>Sonstige Abwesenheit: Projekt</target>
+      </trans-unit>
+      <trans-unit id="wtl89" resname="wtl.cfg.absence_other_activity">
+        <source>wtl.cfg.absence_other_activity</source>
+        <target>Sonstige Abwesenheit: Tätigkeit</target>
+      </trans-unit>
+      <trans-unit id="wtl90" resname="wtl.cfg.absence_start_time">
+        <source>wtl.cfg.absence_start_time</source>
+        <target>Abwesenheiten: Startzeit des Zeiteintrags</target>
+      </trans-unit>
+      <trans-unit id="wtl91" resname="wtl.cfg.absence_duration_source">
+        <source>wtl.cfg.absence_duration_source</source>
+        <target>Abwesenheiten: Dauer im Zeiteintrag (z.B. für den Stundenzettel)</target>
+      </trans-unit>
+      <trans-unit id="wtl92" resname="wtl.cfg.absence_duration_source.value">
+        <source>wtl.cfg.absence_duration_source.value</source>
+        <target>Abwesenheitswert (z.B. 7:48)</target>
+      </trans-unit>
+      <trans-unit id="wtl93" resname="wtl.cfg.absence_duration_source.soll">
+        <source>wtl.cfg.absence_duration_source.soll</source>
+        <target>Tagessoll laut Vertrag (z.B. 8:30 / Fr 5:00)</target>
+      </trans-unit>
+      <trans-unit id="wtl94" resname="wtl.cfg.absence_account_uses_value">
+        <source>wtl.cfg.absence_account_uses_value</source>
+        <target>Arbeitszeitkonto rechnet Abwesenheiten immer mit dem Abwesenheitswert</target>
+      </trans-unit>
+      <trans-unit id="wtl95" resname="wtl.cfg.holiday_mode">
+        <source>wtl.cfg.holiday_mode</source>
+        <target>Feiertage im Arbeitszeitkonto</target>
+      </trans-unit>
+      <trans-unit id="wtl96" resname="wtl.cfg.holiday_mode.zero">
+        <source>wtl.cfg.holiday_mode.zero</source>
+        <target>Soll entfällt (Feiertag zählt ±0)</target>
+      </trans-unit>
+      <trans-unit id="wtl97" resname="wtl.cfg.holiday_mode.credit">
+        <source>wtl.cfg.holiday_mode.credit</source>
+        <target>Abwesenheitswert gutschreiben</target>
+      </trans-unit>
+      <trans-unit id="wtl98" resname="wtl.cfg.close_template">
+        <source>wtl.cfg.close_template</source>
+        <target>Monatsabschluss: Exportvorlage</target>
+      </trans-unit>
+      <trans-unit id="wtl99" resname="wtl.cfg.close_filename">
+        <source>wtl.cfg.close_filename</source>
+        <target>Monatsabschluss: Dateiname ({monat} {monat_nr} {jahr} {name} {benutzer})</target>
+      </trans-unit>
+      <trans-unit id="wtl100" resname="wtl.cfg.close_lock">
+        <source>wtl.cfg.close_lock</source>
+        <target>Monatsabschluss: „Sperren“ vorausgewählt</target>
+      </trans-unit>
+      <trans-unit id="wtl101" resname="wtl.cfg.close_mail">
+        <source>wtl.cfg.close_mail</source>
+        <target>Monatsabschluss: „E-Mail“ vorausgewählt</target>
+      </trans-unit>
+      <trans-unit id="wtl102" resname="wtl.cfg.close_download">
+        <source>wtl.cfg.close_download</source>
+        <target>Monatsabschluss: „Herunterladen“ vorausgewählt</target>
+      </trans-unit>
+      <trans-unit id="wtl103" resname="wtl.cfg.mail_to">
+        <source>wtl.cfg.mail_to</source>
+        <target>E-Mail: Empfänger (mehrere mit Komma)</target>
+      </trans-unit>
+      <trans-unit id="wtl104" resname="wtl.cfg.mail_cc">
+        <source>wtl.cfg.mail_cc</source>
+        <target>E-Mail: Kopie (CC)</target>
+      </trans-unit>
+      <trans-unit id="wtl105" resname="wtl.cfg.mail_subject">
+        <source>wtl.cfg.mail_subject</source>
+        <target>E-Mail: Betreff</target>
+      </trans-unit>
+      <trans-unit id="wtl106" resname="wtl.cfg.mail_body">
+        <source>wtl.cfg.mail_body</source>
+        <target>E-Mail: Text</target>
+      </trans-unit>
+      <trans-unit id="wtl107" resname="wtl.cfg.storage_type">
+        <source>wtl.cfg.storage_type</source>
+        <target>Ablage</target>
+      </trans-unit>
+      <trans-unit id="wtl108" resname="wtl.cfg.storage_type.none">
+        <source>wtl.cfg.storage_type.none</source>
+        <target>Keine Ablage</target>
+      </trans-unit>
+      <trans-unit id="wtl109" resname="wtl.cfg.storage_type.folder">
+        <source>wtl.cfg.storage_type.folder</source>
+        <target>Ordner auf dem Server</target>
+      </trans-unit>
+      <trans-unit id="wtl110" resname="wtl.cfg.storage_type.webdav">
+        <source>wtl.cfg.storage_type.webdav</source>
+        <target>WebDAV (Nextcloud, ownCloud, NAS, …)</target>
+      </trans-unit>
+      <trans-unit id="wtl111" resname="wtl.cfg.storage_folder">
+        <source>wtl.cfg.storage_folder</source>
+        <target>Ablage: Unterordner (z.B. Arbeit/Stundenzettel/{jahr})</target>
+      </trans-unit>
+      <trans-unit id="wtl112" resname="wtl.cfg.storage_server_path">
+        <source>wtl.cfg.storage_server_path</source>
+        <target>Ablage „Ordner auf dem Server“: Basisordner im Kimai-Container</target>
+      </trans-unit>
+      <trans-unit id="wtl113" resname="wtl.cfg.storage_webdav_url">
+        <source>wtl.cfg.storage_webdav_url</source>
+        <target>Ablage WebDAV: Adresse (z.B. https://cloud.example.de/remote.php/dav/files/BENUTZER)</target>
+      </trans-unit>
+      <trans-unit id="wtl114" resname="wtl.cfg.storage_webdav_user">
+        <source>wtl.cfg.storage_webdav_user</source>
+        <target>Ablage WebDAV: Benutzer</target>
+      </trans-unit>
+      <trans-unit id="wtl115" resname="wtl.cfg.storage_webdav_password">
+        <source>wtl.cfg.storage_webdav_password</source>
+        <target>Ablage WebDAV: Passwort / App-Passwort</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

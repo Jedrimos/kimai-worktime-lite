@@ -1,0 +1,58 @@
+{% from "macros/widgets.html.twig" import work_times_result %}
+<div class="card mb-3" id="wtl-overview">
+    <div class="card-header">
+        <h3 class="card-title">{{ 'wtl.overview.title'|trans }}</h3>
+        <div class="card-actions btn-list">
+            {% if canManageAbsences %}
+                <a href="{{ path('wtl_absence', {user: profile.id, year: shownYear}) }}" class="btn btn-sm btn-primary"><i class="fas fa-umbrella-beach me-1"></i>{{ 'wtl.action.absence'|trans }}</a>
+            {% endif %}
+            {% if canEditContract %}
+                <a href="{{ path('user_profile_contract', {username: profile.userIdentifier}) }}" class="btn btn-sm"><i class="fas fa-cog"></i></a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 text-center">
+            <div class="col-6 col-md-3">
+                <div class="text-secondary small">{{ 'wtl.overview.balance'|trans }}</div>
+                <div class="h1 mb-0">{{ work_times_result(0, balance, false) }}</div>
+                <div class="small text-secondary">
+                    {% if startDay %}{{ 'wtl.overview.since'|trans }} {{ startDay|date('d.m.Y') }}{% else %}{{ 'wtl.overview.no_start'|trans }}{% endif %}
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-secondary small">{{ 'wtl.absence.vacation_left'|trans }} {{ shownYear }}</div>
+                <div class="h1 mb-0">{{ (entitlement - counts.vacation)|number_format(1, ',', '.') }}</div>
+                <div class="small text-secondary">{{ counts.vacation|number_format(1, ',', '.') }} / {{ entitlement|number_format(1, ',', '.') }} {{ 'wtl.days'|trans }}</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-secondary small">{{ 'wtl.type.sick'|trans }} {{ shownYear }}</div>
+                <div class="h1 mb-0">{{ counts.sick|number_format(1, ',', '.') }}</div>
+                <div class="small text-secondary">{{ 'wtl.days'|trans }}</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-secondary small">{{ 'wtl.absence.day_value'|trans }}</div>
+                <div class="h1 mb-0">{{ absenceValue|duration }}</div>
+                <div class="small text-secondary">{{ weeklyHours|duration }} {{ 'wtl.overview.per_week'|trans }}</div>
+            </div>
+        </div>
+        {% if perYear|length > 1 or balanceStart != 0 %}
+            <div class="mt-3 small text-secondary text-center">
+                {% if balanceStart != 0 %}{{ 'wtl.balance_start'|trans }}: {{ work_times_result(0, balanceStart, false) }} ·{% endif %}
+                {% for y, diff in perYear %}
+                    {{ y }}: {{ work_times_result(0, diff, false) }}{% if not loop.last %} · {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if holidays|length > 0 %}
+            <details class="mt-3">
+                <summary class="small text-secondary">{{ 'wtl.overview.holidays'|trans }} {{ shownYear }} ({{ holidays|length }})</summary>
+                <div class="small mt-2">
+                    {% for h in holidays %}
+                        <div>{{ h.date|date('d.m.') }} {{ h.name }}</div>
+                    {% endfor %}
+                </div>
+            </details>
+        {% endif %}
+    </div>
+</div>

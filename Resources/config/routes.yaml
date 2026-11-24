@@ -1,0 +1,6 @@
+worktime_lite:
+    resource: "@WorkTimeLiteBundle/Controller/"
+    type: attribute
+    prefix: /{_locale}/worktime-lite
+    defaults:
+        _locale: '%locale%'

@@ -1,0 +1,119 @@
+{% extends 'page_setup.html.twig' %}
+{% from "macros/widgets.html.twig" import work_times_result %}
+
+{% block page_title %}
+    {{ 'wtl.close.title'|trans }}: {{ monthName }} {{ monthDate|date('Y') }} – {{ profile.displayName }}
+{% endblock %}
+
+{% block main %}
+    {% set should = month.expectedTime(now) %}
+    {% set actual = month.actualTime %}
+
+    {% if done and downloadUrl %}
+        {# Download automatisch starten, Seite bleibt stehen #}
+        <iframe src="{{ downloadUrl }}" style="display:none" title="download"></iframe>
+        <div class="alert alert-info">
+            {{ 'wtl.close.download_started'|trans }}
+            <a href="{{ downloadUrl }}" class="alert-link">{{ 'wtl.close.download_again'|trans }}</a>
+        </div>
+    {% endif %}
+
+    <div class="row row-cards">
+        <div class="col-12 col-lg-5">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-3 justify-content-between text-center">
+                        <div class="flex-fill">
+                            <div class="text-secondary small">{{ 'work_times_should'|trans }}</div>
+                            <div class="h2 mb-0">{{ should|duration }}</div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="text-secondary small">{{ 'work_times_is'|trans }}</div>
+                            <div class="h2 mb-0">{{ actual|duration }}</div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="text-secondary small">{{ 'wtl.balance'|trans }}</div>
+                            <div class="h2 mb-0">{{ work_times_result(should, actual, false) }}</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 small text-secondary">
+                        {% if isLocked %}
+                            <i class="fas fa-lock"></i> {{ 'wtl.close.is_locked'|trans }}
+                        {% elseif not canLock %}
+                            <i class="fas fa-lock-open"></i> {{ 'wtl.close.not_lockable'|trans }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {{ form_start(form) }}
+            <div class="card mb-3">
+                <div class="card-header"><h3 class="card-title">{{ 'wtl.close.what'|trans }}</h3></div>
+                <div class="card-body">
+                    {% if form.lock is defined %}{{ form_row(form.lock) }}{% endif %}
+                    {{ form_row(form.mail) }}
+                    {% if form.store is defined %}
+                        {{ form_row(form.store) }}
+                        <div class="small text-secondary mb-3 text-break">→ {{ storageTarget }}/{{ filename }}</div>
+                    {% endif %}
+                    {{ form_row(form.download) }}
+                    <div class="small text-secondary">
+                        {{ 'wtl.close.template'|trans }}: <strong>{{ templateTitle }}</strong><br>
+                        {{ 'wtl.close.filename'|trans }}: <strong class="text-break">{{ filename }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3" id="wtl-mail-card">
+                <div class="card-header"><h3 class="card-title">{{ 'wtl.close.mail'|trans }}</h3></div>
+                <div class="card-body">
+                    {{ form_row(form.to) }}
+                    {{ form_row(form.cc) }}
+                    {{ form_row(form.subject) }}
+                    {{ form_row(form.body) }}
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex mb-3">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-paper-plane me-2"></i>{{ 'wtl.close.submit'|trans }}
+                </button>
+                <a href="{{ contractUrl }}" class="btn btn-lg">{{ 'wtl.close.back'|trans }}</a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+
+        <div class="col-12 col-lg-7">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">{{ 'wtl.close.preview'|trans }}</h3>
+                    <div class="card-actions">
+                        <a href="{{ previewUrl }}" target="_blank" class="btn btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>{{ 'wtl.close.open'|trans }}
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {# Auf dem Handy zeigen viele Browser eingebettete PDFs nicht an – dann den Button oben nutzen #}
+                    <object data="{{ previewUrl }}" type="application/pdf" style="width:100%; height:75vh; min-height:420px; display:block">
+                        <div class="p-3">
+                            {{ 'wtl.close.preview_mobile'|trans }}
+                            <a href="{{ previewUrl }}" target="_blank" class="btn btn-primary mt-2 w-100">{{ 'wtl.close.open'|trans }}</a>
+                        </div>
+                    </object>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var mail = document.getElementById('{{ form.mail.vars.id }}');
+            var card = document.getElementById('wtl-mail-card');
+            if (!mail || !card) { return; }
+            var toggle = function () { card.style.display = mail.checked ? '' : 'none'; };
+            mail.addEventListener('change', toggle);
+            toggle();
+        })();
+    </script>
+{% endblock %}

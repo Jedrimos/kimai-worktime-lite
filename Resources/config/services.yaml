@@ -1,0 +1,15 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    KimaiPlugin\WorkTimeLiteBundle\:
+        resource: '../../*'
+        exclude:
+            - '../../Resources/'
+            - '../../tests/'
+
+    KimaiPlugin\WorkTimeLiteBundle\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']

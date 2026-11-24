@@ -1,0 +1,104 @@
+{% extends 'page_setup.html.twig' %}
+
+{% block page_title %}
+    {{ 'wtl.absence.title'|trans }}{% if not isSelf %} – {{ profile.displayName }}{% endif %}
+{% endblock %}
+
+{% block main %}
+    {% if not configured %}
+        <div class="alert alert-warning">
+            {{ 'wtl.absence.not_configured'|trans }}
+            {% if is_granted('system_configuration') %}
+                <a class="alert-link" href="{{ path('system_configuration_section', {'section': 'work_time_lite'}) }}">{{ 'wtl.settings'|trans }}</a>
+            {% endif %}
+        </div>
+    {% else %}
+    <div class="row row-cards">
+        <div class="col-12 col-lg-5">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-3 text-center">
+                        <div class="flex-fill">
+                            <div class="text-secondary small">{{ 'wtl.absence.vacation_left'|trans }} {{ year }}</div>
+                            <div class="h1 mb-0 {% if remaining < 0 %}text-red{% endif %}">{{ remaining|number_format(1, ',', '.') }}</div>
+                            <div class="small text-secondary">{{ counts.vacation|number_format(1, ',', '.') }} / {{ entitlement|number_format(1, ',', '.') }} {{ 'wtl.days'|trans }}</div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="text-secondary small">{{ 'wtl.type.sick'|trans }}</div>
+                            <div class="h1 mb-0">{{ counts.sick|number_format(1, ',', '.') }}</div>
+                            <div class="small text-secondary">{{ 'wtl.days'|trans }}</div>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="text-secondary small">{{ 'wtl.absence.day_value'|trans }}</div>
+                            <div class="h1 mb-0">{{ absenceValue|duration }}</div>
+                            <div class="small text-secondary">{{ 'wtl.absence.per_day'|trans }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{ form_start(form) }}
+            <div class="card mb-3">
+                <div class="card-header"><h3 class="card-title">{{ 'wtl.absence.new'|trans }}</h3></div>
+                <div class="card-body">
+                    {{ form_row(form.type) }}
+                    <div class="row">
+                        <div class="col-6">{{ form_row(form.begin) }}</div>
+                        <div class="col-6">{{ form_row(form.end) }}</div>
+                    </div>
+                    {{ form_row(form.halfDay) }}
+                    {{ form_row(form.description) }}
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>{{ 'wtl.absence.save'|trans }}
+                        </button>
+                    </div>
+                    <div class="small text-secondary mt-2">{{ 'wtl.absence.hint'|trans }}</div>
+                </div>
+            </div>
+            {{ form_end(form) }}
+            <a href="{{ contractUrl }}" class="btn w-100 mb-3"><i class="fas fa-arrow-left me-2"></i>{{ 'work_times'|trans }}</a>
+        </div>
+
+        <div class="col-12 col-lg-7">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">{{ 'wtl.absence.list'|trans }} {{ year }}</h3>
+                    <div class="card-actions btn-list">
+                        <a class="btn btn-sm" href="{{ path('wtl_absence', {user: profile.id, year: year - 1}) }}"><i class="fas fa-chevron-left"></i></a>
+                        <a class="btn btn-sm" href="{{ path('wtl_absence', {user: profile.id, year: year + 1}) }}"><i class="fas fa-chevron-right"></i></a>
+                    </div>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for row in rows %}
+                        <div class="list-group-item">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="fw-bold">{{ row.date|format_date(pattern: 'EEE') }} {{ row.date|date('d.m.Y') }}</div>
+                                    <div class="small text-secondary">
+                                        {{ ('wtl.type.' ~ row.type)|trans }}
+                                        {% if row.fraction < 1 %} · ½ {{ 'wtl.day'|trans }}{% endif %}
+                                        · {{ row.duration|duration }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    {% if row.locked %}
+                                        <i class="fas fa-lock text-secondary" title="{{ 'wtl.close.is_locked'|trans }}"></i>
+                                    {% else %}
+                                        <form method="post" action="{{ path('wtl_absence_delete', {id: row.id, user: profile.id, year: year}) }}" onsubmit="return confirm('Abwesenheit am {{ row.date|date('d.m.Y') }} löschen?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('wtl_absence_delete') }}">
+                                            <button type="submit" class="btn btn-sm btn-ghost-danger" title="{{ 'delete'|trans }}"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="list-group-item text-secondary">{{ 'wtl.absence.empty'|trans }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
