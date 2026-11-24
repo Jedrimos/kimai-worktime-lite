@@ -6,7 +6,7 @@
     <a class="btn" href="{{ path('wtl_site_orders') }}"><i class="fas fa-truck me-1"></i>Bestellliste</a>
     <a class="btn ms-auto" href="{{ path('wtl_site_project_pdf', {id: project.id}) }}" target="_blank" title="Alle Zettel in einem PDF"><i class="fas fa-file-pdf me-1"></i>Alles</a>
 </div>
-{% if project.customer %}<div class="text-secondary mb-2">{{ project.customer.name }}</div>{% endif %}
+{% if project.customer and project.customer.name != project.name and not overview %}<div class="text-secondary mb-2">{{ project.customer.name }}</div>{% endif %}
 
 <ul class="nav nav-tabs nav-fill">
     <li class="nav-item"><a class="nav-link fw-bold {{ kind == 'overview' ? 'active' }}" href="{{ path('wtl_site_project', {id: project.id}) }}"><i class="fas fa-info-circle"></i><span class="d-none d-md-inline ms-1">Übersicht</span></a></li>
@@ -19,7 +19,7 @@
 <div class="card mb-3" style="border-top-left-radius:0;border-top-right-radius:0">
     <div class="card-body">
         <div class="h2 mb-1">{{ project.name }}</div>
-        {% if o.customer %}<div class="fw-bold">{{ o.customer.name }}{% if o.customer.company and o.customer.company != o.customer.name %} · {{ o.customer.company }}{% endif %}</div>{% endif %}
+        {% if o.customer and o.customer.name != project.name %}<div class="fw-bold">{{ o.customer.name }}{% if o.customer.company and o.customer.company != o.customer.name %} · {{ o.customer.company }}{% endif %}</div>{% endif %}
         {% if o.address %}<div class="text-secondary" style="white-space: pre-line">{{ o.address }}</div>{% endif %}
         {% if o.customer and o.customer.contact %}<div class="mt-2"><i class="fas fa-user me-1 text-secondary"></i>{{ o.customer.contact }}</div>{% endif %}
         <div class="d-flex flex-wrap gap-2 mt-3">

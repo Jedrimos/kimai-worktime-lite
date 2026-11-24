@@ -76,6 +76,7 @@ final class SystemConfigurationSubscriber implements EventSubscriberInterface
         $config[] = $this->cfg('quick_create_global_activity')->setType(CheckboxType::class);
         $config[] = $this->cfg('auto_team')->setType(CheckboxType::class);
         $config[] = $this->cfg('day_buttons')->setType(CheckboxType::class);
+        $config[] = $this->cfg('mobile_nav')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_today')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_todos')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_photos')->setType(CheckboxType::class);

@@ -60,6 +60,7 @@ final class Configuration implements ConfigurationInterface
                 ->booleanNode('auto_team')->defaultTrue()->end()
                 ->booleanNode('day_buttons')->defaultTrue()->end()
                 ->booleanNode('site_today')->defaultTrue()->end()
+                ->booleanNode('mobile_nav')->defaultTrue()->end()
                 ->booleanNode('site_todos')->defaultTrue()->end()
                 ->booleanNode('site_photos')->defaultTrue()->end()
                 ->scalarNode('custom_fields')->defaultValue('')->end()

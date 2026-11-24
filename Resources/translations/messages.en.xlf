@@ -610,6 +610,10 @@
         <source>wtl.cfg.site_photos</source>
         <target>Baustelle: Fotos</target>
       </trans-unit>
+      <trans-unit id="wtl152" resname="wtl.cfg.mobile_nav">
+        <source>wtl.cfg.mobile_nav</source>
+        <target>Handy: Leiste unten (Heute, Baustellen, + Zeit, Zeiten, Mehr)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
