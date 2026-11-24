@@ -104,6 +104,11 @@ final class SystemConfigurationSubscriber implements EventSubscriberInterface
         $config[] = $this->cfg('close_lock')->setType(CheckboxType::class);
         $config[] = $this->cfg('close_mail')->setType(CheckboxType::class);
         $config[] = $this->cfg('close_download')->setType(CheckboxType::class);
+        $config[] = $this->cfg('smtp_host')->setType(TextType::class)->setOptions(['attr' => ['placeholder' => 'smtp.mail.yahoo.com']]);
+        $config[] = $this->cfg('smtp_port')->setType(TextType::class)->setOptions(['attr' => ['placeholder' => '465']]);
+        $config[] = $this->cfg('smtp_user')->setType(TextType::class);
+        $config[] = $this->cfg('smtp_password')->setType(PasswordType::class)->setOptions(['always_empty' => false]);
+        $config[] = $this->cfg('smtp_from')->setType(TextType::class);
         $config[] = $this->cfg('mail_to')->setType(TextType::class);
         $config[] = $this->cfg('mail_cc')->setType(TextType::class);
         $config[] = $this->cfg('mail_subject')->setType(TextType::class);

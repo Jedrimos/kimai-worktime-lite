@@ -4,7 +4,7 @@ namespace KimaiPlugin\WorkTimeLiteBundle\Controller;
 
 use App\Controller\AbstractController;
 use App\Entity\User;
-use App\Mail\KimaiMailer;
+use KimaiPlugin\WorkTimeLiteBundle\Service\PluginMailer;
 use App\Repository\UserRepository;
 use App\Utils\PageSetup;
 use App\WorkingTime\WorkingTimeService;
@@ -85,6 +85,21 @@ final class MonthController extends AbstractController
         ]);
     }
 
+    #[Route(path: '/mail-test', name: 'wtl_mail_test', methods: ['GET'])]
+    #[IsGranted('system_configuration')]
+    public function mailTest(PluginMailer $mailer): Response
+    {
+        $to = $this->settings->string('smtp_from') ?: $this->settings->string('smtp_user') ?: (string) $this->getUser()->getEmail();
+        try {
+            $mailer->send((new Email())->to($to)->subject('WorkTime Lite: Testmail')->text('Der Mailversand aus Kimai funktioniert.'));
+            $this->addFlash('info', 'Testmail gesendet an ' . $to . ($mailer->hasOwnSmtp() ? ' (eigener SMTP)' : ' (Kimai-Mailserver)'));
+        } catch (\Throwable $ex) {
+            $this->addFlash('error', 'Testmail fehlgeschlagen: ' . $ex->getMessage());
+        }
+
+        return $this->redirectToRoute('system_configuration_section', ['section' => 'work_time_lite']);
+    }
+
     #[Route(path: '/{user}/{year}/{month}/unlock', name: 'wtl_month_unlock', requirements: ['user' => '\d+', 'year' => '\d{4}', 'month' => '\d{1,2}'], methods: ['GET'])]
     public function unlock(int $user, int $year, int $month, Request $request): Response
     {
@@ -109,7 +124,7 @@ final class MonthController extends AbstractController
     }
 
     #[Route(path: '/{user}/{year}/{month}', name: 'wtl_month_close', requirements: ['user' => '\d+', 'year' => '\d{4}', 'month' => '\d{1,2}'], methods: ['GET', 'POST'])]
-    public function close(int $user, int $year, int $month, Request $request, KimaiMailer $mailer): Response
+    public function close(int $user, int $year, int $month, Request $request, PluginMailer $mailer): Response
     {
         $profile = $this->loadProfile($user);
         if (!$this->access->canClose($profile)) {
