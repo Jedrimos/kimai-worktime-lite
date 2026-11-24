@@ -574,6 +574,30 @@
         <source>worktime_lite</source>
         <target>WorkTime Lite</target>
       </trans-unit>
+      <trans-unit id="wtl143" resname="wtl.check.ok">
+        <source>wtl.check.ok</source>
+        <target>Check: alles sauber</target>
+      </trans-unit>
+      <trans-unit id="wtl144" resname="wtl.check.title">
+        <source>wtl.check.title</source>
+        <target>Bitte prüfen</target>
+      </trans-unit>
+      <trans-unit id="wtl145" resname="wtl.check.fix">
+        <source>wtl.check.fix</source>
+        <target>Ändern</target>
+      </trans-unit>
+      <trans-unit id="wtl146" resname="wtl.check.add">
+        <source>wtl.check.add</source>
+        <target>Eintragen</target>
+      </trans-unit>
+      <trans-unit id="wtl147" resname="wtl.check.hint">
+        <source>wtl.check.hint</source>
+        <target>Nur Hinweise – es wird nichts automatisch geändert. Nach dem Ändern diese Seite neu laden.</target>
+      </trans-unit>
+      <trans-unit id="wtl148" resname="wtl.cfg.day_buttons">
+        <source>wtl.cfg.day_buttons</source>
+        <target>Knöpfe „Standardtag“ und „Wie letzter Tag“ beim Zeiteintrag anzeigen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

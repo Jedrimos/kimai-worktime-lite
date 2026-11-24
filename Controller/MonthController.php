@@ -10,6 +10,7 @@ use App\Utils\PageSetup;
 use App\WorkingTime\WorkingTimeService;
 use KimaiPlugin\WorkTimeLiteBundle\Service\Access;
 use KimaiPlugin\WorkTimeLiteBundle\Service\DocumentStorage;
+use KimaiPlugin\WorkTimeLiteBundle\Service\MonthCheck;
 use KimaiPlugin\WorkTimeLiteBundle\Service\MonthDocument;
 use KimaiPlugin\WorkTimeLiteBundle\Service\MonthLocker;
 use KimaiPlugin\WorkTimeLiteBundle\Service\Settings;
@@ -36,6 +37,7 @@ final class MonthController extends AbstractController
         private readonly DocumentStorage $storage,
         private readonly UserRepository $userRepository,
         private readonly WorkingTimeService $workingTimeService,
+        private readonly MonthCheck $monthCheck,
     )
     {
     }
@@ -278,6 +280,8 @@ final class MonthController extends AbstractController
             'previewUrl' => $this->generateUrl('wtl_month_pdf', ['user' => $profile->getId(), 'year' => $year, 'month' => $month]),
             'storageTarget' => $this->storage->isEnabled() ? $this->storage->describe($profile, $date) : null,
             'filename' => $this->document->getFilename($profile, $date, 'pdf'),
+            'issues' => $this->monthCheck->check($profile, $date),
+            'isSelf' => $profile->getId() === $this->getUser()->getId(),
             'templateTitle' => $this->document->getAvailableTemplates()[$this->document->getTemplateId()] ?? $this->document->getTemplateId(),
         ]);
     }
