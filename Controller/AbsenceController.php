@@ -13,6 +13,8 @@ use App\Repository\TimesheetRepository;
 use App\Repository\UserRepository;
 use App\Timesheet\TimesheetService;
 use App\Utils\PageSetup;
+use App\Validator\ValidationFailedException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use App\WorkingTime\WorkingTimeService;
 use KimaiPlugin\WorkTimeLiteBundle\Service\AbsenceCalculator;
 use KimaiPlugin\WorkTimeLiteBundle\Service\AbsenceRepository;
@@ -44,6 +46,7 @@ final class AbsenceController extends AbstractController
         private readonly TimesheetRepository $timesheetRepository,
         private readonly TimesheetService $timesheetService,
         private readonly WorkingTimeService $workingTimeService,
+        private readonly TranslatorInterface $translator,
     )
     {
     }
@@ -284,6 +287,12 @@ final class AbsenceController extends AbstractController
             try {
                 $this->timesheetService->saveTimesheet($timesheet);
                 $created++;
+            } catch (ValidationFailedException $ex) {
+                $msgs = [];
+                foreach ($ex->getViolations() as $violation) {
+                    $msgs[] = $this->translator->trans((string) $violation->getMessageTemplate(), $violation->getParameters(), 'validators');
+                }
+                $skipped[] = $label . ': ' . implode(', ', array_unique($msgs));
             } catch (\Throwable $ex) {
                 $this->logException($ex);
                 $skipped[] = $label . ': ' . $ex->getMessage();
