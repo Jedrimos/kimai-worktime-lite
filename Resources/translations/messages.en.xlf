@@ -100,7 +100,7 @@
       </trans-unit>
       <trans-unit id="wtl24" resname="wtl.summary.work">
         <source>wtl.summary.work</source>
-        <target>Arbeitszeit</target>
+        <target>Gearbeitet (gegen volles Soll)</target>
       </trans-unit>
       <trans-unit id="wtl25" resname="wtl.summary.vacation">
         <source>wtl.summary.vacation</source>
