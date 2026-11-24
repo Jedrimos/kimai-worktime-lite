@@ -1,0 +1,95 @@
+{% extends 'page_setup.html.twig' %}
+
+{% block page_title %}{{ 'wtl.week.title'|trans }}{% endblock %}
+
+{% block main %}
+<style>
+    .wtl-week .wtl-day { border-left: 4px solid var(--tblr-primary); }
+    .wtl-week .wtl-day.wtl-empty { border-left-color: var(--tblr-border-color); opacity: .75; }
+    .wtl-week .wtl-time { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .wtl-week .wtl-place { font-size: 1.05rem; }
+    @media print {
+        aside, header, .navbar, .page-header, .wtl-noprint, .float-help, footer { display: none !important; }
+        .page-wrapper, .page-body, .container-xl { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+        .wtl-week .card { break-inside: avoid; box-shadow: none !important; border: 1px solid #999 !important; }
+        body { background: #fff !important; color: #000 !important; }
+    }
+</style>
+
+<div class="wtl-week">
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <div class="h2 mb-1">{{ user.displayName }}</div>
+                    {% if employer %}
+                        <div class="text-secondary" style="white-space: pre-line">{{ 'wtl.week.employer'|trans }}: {{ employer }}</div>
+                    {% endif %}
+                    <div class="mt-2 fw-bold">
+                        KW {{ monday|date('W', false) }}: {{ monday|date('d.m.Y', false) }} – {{ sunday|date('d.m.Y', false) }}
+                    </div>
+                    <div class="text-secondary small">{{ 'wtl.week.created'|trans }} {{ now|date('d.m.Y H:i', false) }}</div>
+                </div>
+                <div class="text-end">
+                    <div class="text-secondary small">{{ 'wtl.week.total'|trans }}</div>
+                    <div class="h1 mb-0">{{ weekTotal|duration }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-3 wtl-noprint">
+        <a class="btn" href="{{ path('wtl_week', {date: prev}) }}"><i class="fas fa-chevron-left"></i></a>
+        {% if not isCurrent %}<a class="btn flex-fill" href="{{ path('wtl_week') }}">{{ 'wtl.week.this_week'|trans }}</a>{% else %}<span class="flex-fill"></span>{% endif %}
+        <a class="btn" href="{{ path('wtl_week', {date: next}) }}"><i class="fas fa-chevron-right"></i></a>
+        <button type="button" class="btn btn-primary" onclick="window.print()"><i class="fas fa-print me-1"></i>{{ 'wtl.week.print'|trans }}</button>
+    </div>
+
+    {% for key, day in days %}
+        {% set empty = day.entries|length == 0 %}
+        {% if not (empty and day.date|date('N', false) >= 6 and day.holiday is null) %}
+        <div class="card mb-2 wtl-day {% if empty %}wtl-empty{% endif %}">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between align-items-baseline flex-wrap">
+                    <div class="fw-bold">{{ day.date|format_date(pattern: 'EEEE', locale: 'de') }}, {{ day.date|date('d.m.Y', false) }}</div>
+                    {% if day.first %}
+                        <div class="wtl-time">{{ day.first|date('H:i', false) }} – {{ day.last ? day.last|date('H:i', false) : 'läuft' }}</div>
+                    {% endif %}
+                </div>
+                {% if day.holiday %}<div class="text-secondary">{{ 'wtl.week.holiday'|trans }}: {{ day.holiday }}</div>{% endif %}
+                {% if empty and not day.holiday %}<div class="text-secondary">{{ 'wtl.week.no_entries'|trans }}</div>{% endif %}
+
+                {% for e in day.entries %}
+                    <div class="border-top mt-2 pt-2">
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            <div>
+                                <span class="fw-bold">{{ e.begin|date('H:i', false) }}–{{ e.end ? e.end|date('H:i', false) : '…' }}</span>
+                                {% if e.break > 0 %}<span class="text-secondary"> · {{ 'wtl.week.break'|trans }} {{ e.break|duration }}</span>{% endif %}
+                            </div>
+                            <div class="text-secondary">{{ e.duration|duration }}</div>
+                        </div>
+                        {% if e.absence %}
+                            <div class="wtl-place">{{ ('wtl.type.' ~ e.absence)|trans }}</div>
+                        {% else %}
+                            <div class="wtl-place">
+                                <i class="fas fa-map-marker-alt text-red me-1"></i><strong>{{ e.customer }}</strong>{% if e.project and e.project != e.customer %} – {{ e.project }}{% endif %}
+                            </div>
+                            <div class="small text-secondary">
+                                {{ e.activity }}{% for m in e.meta %} · {{ m.label }}: {{ m.value }}{% endfor %}
+                            </div>
+                            {% if e.description %}<div class="small">{{ e.description }}</div>{% endif %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                {% if day.duration > 0 %}
+                    <div class="small text-end mt-1">
+                        {{ 'wtl.week.day_total'|trans }}: <strong>{{ day.duration|duration }}</strong>{% if day.break > 0 %} ({{ 'wtl.week.break'|trans }} {{ day.break|duration }}){% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

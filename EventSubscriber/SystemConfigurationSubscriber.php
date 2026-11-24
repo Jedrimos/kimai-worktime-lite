@@ -79,6 +79,8 @@ final class SystemConfigurationSubscriber implements EventSubscriberInterface
             'help' => 'wtl.cfg.custom_fields.help',
         ]);
 
+        $config[] = $this->cfg('zoll_employer')->setType(TextareaType::class)->setOptions(['attr' => ['rows' => 3, 'placeholder' => "Firma GmbH\nStraße 1, 12345 Ort"]]);
+
         // Abwesenheiten
         foreach (['vacation', 'sick', 'overtime', 'other'] as $type) {
             $config[] = $this->cfg('absence_' . $type . '_project')->setType(ChoiceType::class)->setOptions(['choices' => $projects, 'placeholder' => '–', 'choice_translation_domain' => false]);

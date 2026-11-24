@@ -494,6 +494,50 @@
         <source>wtl.pro_rata</source>
         <target>anteilig</target>
       </trans-unit>
+      <trans-unit id="wtl123" resname="wtl.week.title">
+        <source>wtl.week.title</source>
+        <target>Meine Woche</target>
+      </trans-unit>
+      <trans-unit id="wtl124" resname="wtl.week.employer">
+        <source>wtl.week.employer</source>
+        <target>Arbeitgeber</target>
+      </trans-unit>
+      <trans-unit id="wtl125" resname="wtl.week.created">
+        <source>wtl.week.created</source>
+        <target>Stand:</target>
+      </trans-unit>
+      <trans-unit id="wtl126" resname="wtl.week.total">
+        <source>wtl.week.total</source>
+        <target>Arbeitszeit Woche</target>
+      </trans-unit>
+      <trans-unit id="wtl127" resname="wtl.week.this_week">
+        <source>wtl.week.this_week</source>
+        <target>Diese Woche</target>
+      </trans-unit>
+      <trans-unit id="wtl128" resname="wtl.week.print">
+        <source>wtl.week.print</source>
+        <target>Drucken / PDF</target>
+      </trans-unit>
+      <trans-unit id="wtl129" resname="wtl.week.holiday">
+        <source>wtl.week.holiday</source>
+        <target>Feiertag</target>
+      </trans-unit>
+      <trans-unit id="wtl130" resname="wtl.week.no_entries">
+        <source>wtl.week.no_entries</source>
+        <target>keine Einträge</target>
+      </trans-unit>
+      <trans-unit id="wtl131" resname="wtl.week.break">
+        <source>wtl.week.break</source>
+        <target>Pause</target>
+      </trans-unit>
+      <trans-unit id="wtl132" resname="wtl.week.day_total">
+        <source>wtl.week.day_total</source>
+        <target>Tag gesamt</target>
+      </trans-unit>
+      <trans-unit id="wtl133" resname="wtl.cfg.zoll_employer">
+        <source>wtl.cfg.zoll_employer</source>
+        <target>Meine Woche (Zoll-Nachweis): Arbeitgeber mit Anschrift</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

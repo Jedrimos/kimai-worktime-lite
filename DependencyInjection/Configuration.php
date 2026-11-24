@@ -53,6 +53,7 @@ final class Configuration implements ConfigurationInterface
                 ->booleanNode('quick_create')->defaultTrue()->end()
                 ->booleanNode('quick_create_global_activity')->defaultTrue()->end()
                 ->scalarNode('custom_fields')->defaultValue('')->end()
+                ->scalarNode('zoll_employer')->defaultValue('')->end()
             ->end()
         ->end();
 
