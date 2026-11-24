@@ -1,0 +1,2 @@
+{% macro qty(item) %}{% if item.quantity is not null %}{{ item.quantity|number_format(3, ',', '.')|trim('0', 'right')|trim(',', 'right') }}{% if item.unit %} {{ item.unit }}{% endif %}{% endif %}{% endmacro %}
+{% macro status_badge(status) %}{% set c = {offen: 'bg-orange-lt', bestellt: 'bg-blue-lt', geliefert: 'bg-green-lt'} %}<span class="badge {{ c[status]|default('') }}">{{ status|capitalize }}</span>{% endmacro %}

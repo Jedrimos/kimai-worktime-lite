@@ -1,0 +1,165 @@
+<?php
+
+namespace KimaiPlugin\WorkTimeLiteBundle\Service;
+
+use Doctrine\DBAL\Connection;
+
+/**
+ * Baustellen-Zettel: Aufmaß, Material und Notizen pro Projekt.
+ * Eigene, einfache Tabelle (wird beim ersten Aufruf automatisch angelegt).
+ */
+final class SiteRepository
+{
+    public const TABLE = 'kimai2_wtl_site_items';
+    public const KINDS = ['aufmass', 'material', 'notiz'];
+    public const STATUS = ['offen', 'bestellt', 'geliefert'];
+
+    private bool $ready = false;
+
+    public function __construct(private readonly Connection $connection)
+    {
+    }
+
+    private function ensureTable(): void
+    {
+        if ($this->ready) {
+            return;
+        }
+        $this->connection->executeStatement('CREATE TABLE IF NOT EXISTS ' . self::TABLE . ' (
+            id INT AUTO_INCREMENT NOT NULL,
+            user_id INT NOT NULL,
+            project_id INT NOT NULL,
+            item_date DATE NOT NULL,
+            kind VARCHAR(20) NOT NULL,
+            quantity DECIMAL(12,3) DEFAULT NULL,
+            unit VARCHAR(20) DEFAULT NULL,
+            text VARCHAR(500) NOT NULL,
+            room VARCHAR(100) DEFAULT NULL,
+            supplier VARCHAR(100) DEFAULT NULL,
+            status VARCHAR(20) DEFAULT NULL,
+            created_at DATETIME NOT NULL,
+            updated_at DATETIME NOT NULL,
+            INDEX wtl_site_user_project (user_id, project_id),
+            INDEX wtl_site_status (user_id, kind, status),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        $this->ready = true;
+    }
+
+    /**
+     * @param array{project_id: int, item_date: string, kind: string, quantity: ?float, unit: ?string, text: string, room: ?string, supplier: ?string} $data
+     */
+    public function add(int $userId, array $data): int
+    {
+        $this->ensureTable();
+        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $this->connection->insert(self::TABLE, [
+            'user_id' => $userId,
+            'project_id' => $data['project_id'],
+            'item_date' => $data['item_date'],
+            'kind' => $data['kind'],
+            'quantity' => $data['quantity'],
+            'unit' => $data['unit'],
+            'text' => $data['text'],
+            'room' => $data['room'],
+            'supplier' => $data['supplier'],
+            'status' => $data['kind'] === 'material' ? 'offen' : null,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return (int) $this->connection->lastInsertId();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function find(int $userId, int $id): ?array
+    {
+        $this->ensureTable();
+        $row = $this->connection->fetchAssociative('SELECT * FROM ' . self::TABLE . ' WHERE id = ? AND user_id = ?', [$id, $userId]);
+
+        return $row === false ? null : $row;
+    }
+
+    public function delete(int $userId, int $id): void
+    {
+        $this->ensureTable();
+        $this->connection->delete(self::TABLE, ['id' => $id, 'user_id' => $userId]);
+    }
+
+    public function setStatus(int $userId, int $id, string $status): void
+    {
+        $this->ensureTable();
+        if (!\in_array($status, self::STATUS, true)) {
+            return;
+        }
+        $this->connection->update(self::TABLE, ['status' => $status, 'updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s')], ['id' => $id, 'user_id' => $userId, 'kind' => 'material']);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function forProject(int $userId, int $projectId, ?string $kind = null): array
+    {
+        $this->ensureTable();
+        $sql = 'SELECT * FROM ' . self::TABLE . ' WHERE user_id = ? AND project_id = ?';
+        $params = [$userId, $projectId];
+        if ($kind !== null) {
+            $sql .= ' AND kind = ?';
+            $params[] = $kind;
+        }
+
+        return $this->connection->fetchAllAssociative($sql . ' ORDER BY item_date DESC, id ASC', $params);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function openMaterial(int $userId, bool $includeDelivered = false): array
+    {
+        $this->ensureTable();
+        $sql = 'SELECT * FROM ' . self::TABLE . " WHERE user_id = ? AND kind = 'material'";
+        if (!$includeDelivered) {
+            $sql .= " AND status <> 'geliefert'";
+        }
+
+        return $this->connection->fetchAllAssociative($sql . ' ORDER BY supplier, project_id, item_date, id', [$userId]);
+    }
+
+    /**
+     * Projekte mit Einträgen (zuletzt bearbeitet zuerst).
+     *
+     * @return array<int, array{project_id: int, items: int, last: string}>
+     */
+    public function projectsWithItems(int $userId): array
+    {
+        $this->ensureTable();
+        $rows = $this->connection->fetchAllAssociative('SELECT project_id, COUNT(*) items, MAX(updated_at) last FROM ' . self::TABLE . ' WHERE user_id = ? GROUP BY project_id ORDER BY last DESC', [$userId]);
+
+        return array_map(fn ($r) => ['project_id' => (int) $r['project_id'], 'items' => (int) $r['items'], 'last' => (string) $r['last']], $rows);
+    }
+
+    /**
+     * Frühere Texte für Vorschläge beim Tippen.
+     *
+     * @return array<int, string>
+     */
+    public function suggestions(int $userId, string $kind): array
+    {
+        $this->ensureTable();
+        $rows = $this->connection->fetchFirstColumn('SELECT text FROM ' . self::TABLE . ' WHERE user_id = ? AND kind = ? GROUP BY text ORDER BY COUNT(*) DESC LIMIT 200', [$userId, $kind]);
+
+        return array_map('strval', $rows);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function suppliers(int $userId): array
+    {
+        $this->ensureTable();
+
+        return array_map('strval', $this->connection->fetchFirstColumn('SELECT supplier FROM ' . self::TABLE . " WHERE user_id = ? AND supplier IS NOT NULL AND supplier <> '' GROUP BY supplier ORDER BY COUNT(*) DESC", [$userId]));
+    }
+}

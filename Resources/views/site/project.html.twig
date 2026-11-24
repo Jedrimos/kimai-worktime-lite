@@ -1,0 +1,92 @@
+{% extends 'page_setup.html.twig' %}
+{% import '@WorkTimeLite/site/_macros.html.twig' as m %}
+{% block page_title %}{{ project.name }}{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_site') %}
+<style>
+    .wtl-site .nav-link { font-weight: 600; }
+    .wtl-site .wtl-row { display: flex; gap: .75rem; align-items: center; }
+    .wtl-site .wtl-qty { min-width: 5.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .wtl-site .wtl-text { flex: 1; word-break: break-word; }
+    .wtl-site input, .wtl-site select { font-size: 1rem; }
+</style>
+<div class="wtl-site">
+    <div class="d-flex gap-2 mb-3 flex-wrap">
+        <a class="btn" href="{{ path('wtl_site') }}"><i class="fas fa-chevron-left me-1"></i>Baustellen</a>
+        <a class="btn" href="{{ path('wtl_site_orders') }}"><i class="fas fa-truck me-1"></i>Bestellliste</a>
+        <a class="btn btn-primary ms-auto" href="{{ path('wtl_site_project_pdf', {id: project.id}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF</a>
+    </div>
+    {% if project.customer %}<div class="text-secondary mb-2">{{ project.customer.name }}</div>{% endif %}
+
+    <ul class="nav nav-tabs nav-fill mb-0">
+        {% for k, label in kinds %}
+            <li class="nav-item"><a class="nav-link {{ k == kind ? 'active' }}" href="{{ path('wtl_site_project', {id: project.id, kind: k}) }}">{{ label }} <span class="badge ms-1">{{ byKind[k]|reduce((c, d) => c + d|length, 0) }}</span></a></li>
+        {% endfor %}
+    </ul>
+
+    <div class="card mb-3" style="border-top-left-radius:0;border-top-right-radius:0">
+        <div class="card-body">
+            <form method="post" action="{{ path('wtl_site_project', {id: project.id, kind: kind}) }}" autocomplete="off">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <input type="hidden" name="kind" value="{{ kind }}">
+                <div class="row g-2">
+                    <div class="col-6 col-md-2"><input type="date" name="date" class="form-control" value="{{ last.date|default(today) }}"></div>
+                    <div class="col-6 col-md-2"><input type="text" name="room" class="form-control" placeholder="Raum / Stelle" value="{{ last.room|default('') }}" list="wtl-rooms"></div>
+                    {% if kind != 'notiz' %}
+                        <div class="col-6 col-md-2"><input type="text" name="quantity" class="form-control" inputmode="decimal" placeholder="Menge" autofocus></div>
+                        <div class="col-6 col-md-2">
+                            <input type="text" name="unit" class="form-control" placeholder="Einheit" list="wtl-units" value="{{ attribute(last, 'unit_' ~ kind)|default(kind == 'aufmass' ? 'm' : 'Stk') }}">
+                        </div>
+                    {% endif %}
+                    <div class="col-12 {{ kind == 'notiz' ? 'col-md-8' : 'col-md-4' }}">
+                        {% if kind == 'notiz' %}
+                            <textarea name="text" class="form-control" rows="2" placeholder="Notiz" required autofocus></textarea>
+                        {% else %}
+                            <input type="text" name="text" class="form-control" placeholder="{{ kind == 'aufmass' ? 'z. B. NYM-J 3x1,5 Unterputz' : 'z. B. Schalter Gira E2 reinweiß' }}" list="wtl-suggest" required>
+                        {% endif %}
+                    </div>
+                    {% if kind == 'material' %}
+                        <div class="col-12 col-md-4"><input type="text" name="supplier" class="form-control" placeholder="Großhändler (z. B. Sonepar, Rexel, Zander)" list="wtl-suppliers" value="{{ last.supplier|default('') }}"></div>
+                    {% endif %}
+                    <div class="col-12"><button class="btn btn-primary w-100"><i class="fas fa-plus me-1"></i>{{ kinds[kind] }} hinzufügen</button></div>
+                </div>
+                <datalist id="wtl-units">{% for u in units %}<option value="{{ u }}">{% endfor %}</datalist>
+                <datalist id="wtl-suggest">{% for s in suggestions %}<option value="{{ s }}">{% endfor %}</datalist>
+                <datalist id="wtl-suppliers">{% for s in suppliers %}<option value="{{ s }}">{% endfor %}</datalist>
+                <datalist id="wtl-rooms">{% for d in byKind|reduce((c, k) => c|merge(k), {}) %}{% for i in d %}{% if i.room %}<option value="{{ i.room }}">{% endif %}{% endfor %}{% endfor %}</datalist>
+            </form>
+        </div>
+    </div>
+
+    {% for date, items in byKind[kind] %}
+        <div class="card mb-2">
+            <div class="card-header py-2"><strong>{{ date|date('d.m.Y', false) }}</strong></div>
+            <div class="list-group list-group-flush">
+                {% for item in items %}
+                    <div class="list-group-item py-2 wtl-row">
+                        {% if kind != 'notiz' %}<div class="wtl-qty">{{ m.qty(item) }}</div>{% endif %}
+                        <div class="wtl-text">
+                            <div style="white-space: pre-line">{{ item.text }}</div>
+                            <div class="small text-secondary">{{ item.room }}{% if item.room and item.supplier %} · {% endif %}{{ item.supplier }}</div>
+                        </div>
+                        {% if kind == 'material' %}
+                            <form method="post" action="{{ path('wtl_site_item_status', {id: item.id}) }}">
+                                <input type="hidden" name="_token" value="{{ token }}">
+                                {% set next = {offen: 'bestellt', bestellt: 'geliefert', geliefert: 'offen'} %}
+                                <input type="hidden" name="status" value="{{ next[item.status]|default('offen') }}">
+                                <button class="btn btn-sm btn-ghost-secondary p-1" title="Weiter auf: {{ next[item.status]|default('offen') }}">{{ m.status_badge(item.status) }}</button>
+                            </form>
+                        {% endif %}
+                        <form method="post" action="{{ path('wtl_site_item_delete', {id: item.id}) }}" onsubmit="return confirm('Eintrag löschen?')">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <button class="btn btn-sm btn-ghost-danger p-1" title="Löschen"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="text-secondary text-center py-3">Noch nichts eingetragen.</div>
+    {% endfor %}
+</div>
+{% endblock %}

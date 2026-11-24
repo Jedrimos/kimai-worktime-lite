@@ -1,0 +1,50 @@
+{% import '@WorkTimeLite/site/_macros.html.twig' as m %}
+<html><head><meta charset="utf-8"><style>
+body { font-family: sans-serif; font-size: 10pt; }
+h1 { font-size: 15pt; margin: 0 0 2mm 0; }
+h2 { font-size: 12pt; margin: 6mm 0 2mm 0; border-bottom: 1px solid #333; }
+.meta { color: #555; margin-bottom: 4mm; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border-bottom: 0.2mm solid #bbb; padding: 1.5mm 1mm; text-align: left; vertical-align: top; }
+th { background: #eee; }
+td.q { width: 22mm; text-align: right; white-space: nowrap; font-weight: bold; }
+td.d { width: 18mm; }
+td.c { width: 8mm; }
+.box { display: inline-block; width: 4mm; height: 4mm; border: 0.3mm solid #333; }
+</style></head><body>
+{% if mode == 'project' %}
+    <h1>Baustelle: {{ project.name }}</h1>
+    <div class="meta">{% if project.customer %}{{ project.customer.name }} · {% endif %}{{ user.displayName }} · Stand {{ now|date('d.m.Y H:i', false) }}</div>
+    {% for kind, label in kinds %}
+        {% if byKind[kind]|length > 0 %}
+            <h2>{{ label }}</h2>
+            <table>
+                <tr><th>Datum</th>{% if kind != 'notiz' %}<th style="text-align:right">Menge</th>{% endif %}<th>{{ kind == 'notiz' ? 'Notiz' : 'Bezeichnung' }}</th><th>{{ kind == 'material' ? 'Raum / Großhändler' : 'Raum / Stelle' }}</th>{% if kind == 'material' %}<th>Status</th>{% endif %}</tr>
+                {% for date, items in byKind[kind] %}{% for item in items %}
+                    <tr>
+                        <td class="d">{{ date|date('d.m.y', false) }}</td>
+                        {% if kind != 'notiz' %}<td class="q">{{ m.qty(item) }}</td>{% endif %}
+                        <td>{{ item.text|nl2br }}</td>
+                        <td>{{ item.room }}{% if item.room and item.supplier %} / {% endif %}{{ item.supplier }}</td>
+                        {% if kind == 'material' %}<td>{{ item.status }}</td>{% endif %}
+                    </tr>
+                {% endfor %}{% endfor %}
+            </table>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <h1>Bestellliste</h1>
+    <div class="meta">{{ user.displayName }} · Stand {{ now|date('d.m.Y H:i', false) }}</div>
+    {% for supplier, items in groups %}
+        <h2>{{ supplier }}</h2>
+        <table>
+            <tr><th class="c"></th><th style="text-align:right">Menge</th><th>Bezeichnung</th><th>Baustelle</th><th>Status</th></tr>
+            {% for item in items %}
+                <tr><td class="c"><span class="box"></span></td><td class="q">{{ m.qty(item) }}</td><td>{{ item.text }}</td><td>{{ item.project ? item.project.name : '' }}{% if item.room %} ({{ item.room }}){% endif %}</td><td>{{ item.status }}</td></tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Kein offenes Material.</p>
+    {% endfor %}
+{% endif %}
+</body></html>

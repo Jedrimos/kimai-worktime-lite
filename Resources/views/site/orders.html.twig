@@ -1,0 +1,45 @@
+{% extends 'page_setup.html.twig' %}
+{% import '@WorkTimeLite/site/_macros.html.twig' as m %}
+{% block page_title %}Bestellliste{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_site') %}
+<div class="d-flex gap-2 mb-3 flex-wrap">
+    <a class="btn" href="{{ path('wtl_site') }}"><i class="fas fa-chevron-left me-1"></i>Baustellen</a>
+    {% if all %}
+        <a class="btn" href="{{ path('wtl_site_orders') }}">Nur offene</a>
+    {% else %}
+        <a class="btn" href="{{ path('wtl_site_orders', {all: 1}) }}">Auch Geliefertes</a>
+    {% endif %}
+    <a class="btn btn-primary ms-auto" href="{{ path('wtl_site_orders_pdf', all ? {all: 1} : {}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF</a>
+</div>
+{% for supplier, items in groups %}
+    <div class="card mb-3">
+        <div class="card-header py-2"><strong><i class="fas fa-store me-2"></i>{{ supplier }}</strong><span class="ms-auto text-secondary">{{ items|length }}</span></div>
+        <div class="list-group list-group-flush">
+            {% for item in items %}
+                <div class="list-group-item py-2 d-flex gap-2 align-items-center">
+                    <div style="min-width:5.5rem" class="fw-bold">{{ m.qty(item) }}</div>
+                    <div class="flex-fill">
+                        <div>{{ item.text }}</div>
+                        <div class="small text-secondary">
+                            {% if item.project %}<a href="{{ path('wtl_site_project', {id: item.project_id, kind: 'material'}) }}">{{ item.project.name }}</a>{% endif %}
+                            · {{ item.item_date|date('d.m.', false) }}{% if item.room %} · {{ item.room }}{% endif %}
+                        </div>
+                    </div>
+                    <form method="post" action="{{ path('wtl_site_item_status', {id: item.id}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <input type="hidden" name="back" value="orders">
+                        {% if all %}<input type="hidden" name="all" value="1">{% endif %}
+                        {% set next = {offen: 'bestellt', bestellt: 'geliefert', geliefert: 'offen'} %}
+                        <input type="hidden" name="status" value="{{ next[item.status]|default('offen') }}">
+                        <button class="btn btn-sm btn-ghost-secondary p-1" title="Weiter auf: {{ next[item.status]|default('offen') }}">{{ m.status_badge(item.status) }}</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <div class="text-secondary text-center py-4">Kein offenes Material. 👍</div>
+{% endfor %}
+<div class="form-hint">Antippen des Status schaltet weiter: offen → bestellt → geliefert.</div>
+{% endblock %}

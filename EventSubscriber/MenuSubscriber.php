@@ -34,6 +34,7 @@ final class MenuSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $menu->addChild(new MenuItemModel('wtl_site', 'Baustellen', 'wtl_site', [], 'fas fa-hard-hat'));
         $menu->addChild(new MenuItemModel('wtl_week', 'wtl.week.title', 'wtl_week', [], 'fas fa-id-card'));
         if ($this->security->isGranted('wtl_absence_own')) {
             $menu->addChild(new MenuItemModel('wtl_absence', 'wtl.absence.title', 'wtl_absence', [], 'fas fa-umbrella-beach'));
