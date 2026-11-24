@@ -9,7 +9,7 @@ table { width: 100%; border-collapse: collapse; }
 th, td { border-bottom: 0.2mm solid #bbb; padding: 1.5mm 1mm; text-align: left; vertical-align: top; }
 th { background: #eee; }
 td.q { width: 22mm; text-align: right; white-space: nowrap; font-weight: bold; }
-td.d { width: 18mm; }
+td.day { background: #f4f4f4; font-weight: bold; padding-top: 2.5mm; }
 td.c { width: 8mm; }
 .box { display: inline-block; width: 4mm; height: 4mm; border: 0.3mm solid #333; }
 </style></head><body>
@@ -21,10 +21,12 @@ td.c { width: 8mm; }
         {% if byKind[kind]|length > 0 %}
             {% if not single %}<h2>{{ label }}</h2>{% endif %}
             <table>
-                <tr><th>Datum</th>{% if kind != 'notiz' %}<th style="text-align:right">Menge</th>{% endif %}<th>{{ kind == 'notiz' ? 'Notiz' : 'Bezeichnung' }}</th><th>{{ kind == 'material' ? 'Raum / Großhändler' : 'Raum / Stelle' }}</th>{% if kind == 'material' %}<th>Status</th>{% endif %}</tr>
-                {% for date, items in byKind[kind] %}{% for item in items %}
+                <tr>{% if kind != 'notiz' %}<th style="text-align:right">Menge</th>{% endif %}<th>{{ kind == 'notiz' ? 'Notiz' : 'Bezeichnung' }}</th><th>{{ kind == 'material' ? 'Raum / Großhändler' : 'Raum / Stelle' }}</th>{% if kind == 'material' %}<th>Status</th>{% endif %}</tr>
+                {% set cols = kind == 'material' ? 4 : (kind == 'notiz' ? 2 : 3) %}
+                {% for date, items in byKind[kind] %}
+                    <tr><td colspan="{{ cols }}" class="day">{{ date|date('d.m.Y', false) }}</td></tr>
+                    {% for item in items %}
                     <tr>
-                        <td class="d">{{ date|date('d.m.y', false) }}</td>
                         {% if kind != 'notiz' %}<td class="q">{{ m.qty(item) }}</td>{% endif %}
                         <td>{{ item.text|nl2br }}</td>
                         <td>{{ item.room }}{% if item.room and item.supplier %} / {% endif %}{{ item.supplier }}</td>
