@@ -70,6 +70,7 @@ final class Configuration implements ConfigurationInterface
                 ->booleanNode('site_meters')->defaultTrue()->end()
                 ->booleanNode('site_feierabend')->defaultTrue()->end()
                 ->booleanNode('today_stamp')->defaultFalse()->end()
+                ->booleanNode('site_report')->defaultTrue()->end()
                 ->booleanNode('site_packlist')->defaultTrue()->end()
                 ->booleanNode('site_ampel')->defaultTrue()->end()
                 ->booleanNode('site_tools')->defaultTrue()->end()

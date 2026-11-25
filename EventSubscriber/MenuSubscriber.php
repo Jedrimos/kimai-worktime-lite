@@ -48,13 +48,16 @@ final class MenuSubscriber implements EventSubscriberInterface
         if ($this->settings->bool('site_tools', true)) {
             $site->addChild(new MenuItemModel('wtl_tools', 'Werkzeug', 'wtl_tools', [], 'fas fa-tools'));
         }
+        if ($this->settings->bool('site_report', true)) {
+            $site->addChild(new MenuItemModel('wtl_report', 'Baustellenberichte', 'wtl_report', [], 'fas fa-file-signature'));
+        }
         if ($this->settings->string('companions') !== '') {
             $site->addChild(new MenuItemModel('wtl_people', 'Mit wem', 'wtl_people', [], 'fas fa-user-friends'));
         }
         if ($this->settings->bool('site_tax', true)) {
             $site->addChild(new MenuItemModel('wtl_tax', 'Steuer-Hilfe', 'wtl_tax', [], 'fas fa-receipt'));
         }
-        $site->setChildRoutes(['wtl_people', 'wtl_person', 'wtl_today', 'wtl_today_feierabend', 'wtl_tools', 'wtl_stock', 'wtl_tax', 'wtl_site_circuits', 'wtl_site_todos', 'wtl_site_photos', 'wtl_site', 'wtl_site_orders', 'wtl_site_project', 'wtl_site_sheet', 'wtl_site_sheet_new']);
+        $site->setChildRoutes(['wtl_report', 'wtl_report_day', 'wtl_report_setup', 'wtl_people', 'wtl_person', 'wtl_today', 'wtl_today_feierabend', 'wtl_tools', 'wtl_stock', 'wtl_tax', 'wtl_site_circuits', 'wtl_site_todos', 'wtl_site_photos', 'wtl_site', 'wtl_site_orders', 'wtl_site_project', 'wtl_site_sheet', 'wtl_site_sheet_new']);
         $root->addChild($site);
         $children = [];
         $inserted = false;

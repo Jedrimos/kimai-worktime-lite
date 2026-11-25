@@ -150,6 +150,7 @@ final class TodayController extends AbstractController
             'runningSites' => $running_sites,
             'useFeierabend' => $this->settings->bool('site_feierabend', true),
             'stamp' => $this->settings->bool('today_stamp', false),
+            'useReport' => $this->settings->bool('site_report', true),
             'now' => $now,
             'running' => $running,
             'todays' => $todays,

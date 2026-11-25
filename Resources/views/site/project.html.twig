@@ -138,7 +138,7 @@
                     <span class="fw-bold">{{ t.begin|date('D d.m.Y', false)|replace({Mon:'Mo',Tue:'Di',Wed:'Mi',Thu:'Do',Fri:'Fr',Sat:'Sa',Sun:'So'}) }}</span>
                     <span>{{ t.begin|date('H:i', false) }}–{{ t.end ? t.end|date('H:i', false) : 'läuft' }} · {{ t.duration|duration }}</span>
                 </div>
-                <div class="small text-secondary">{{ t.activity ? t.activity.name }}{% if t.description %} · {{ t.description|u.truncate(80, '…') }}{% endif %}</div>
+                <div class="small text-secondary d-flex"><span class="flex-fill">{{ t.activity ? t.activity.name }}{% if t.description %} · {{ t.description|u.truncate(80, '…') }}{% endif %}</span>{% if t.end %}<a href="{{ path('wtl_report_day', {date: t.begin|date('Y-m-d', false), project: project.id}) }}" title="Baustellenbericht"><i class="fas fa-file-signature"></i></a>{% endif %}</div>
             </div>
         {% endfor %}
     </div>

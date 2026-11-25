@@ -53,7 +53,10 @@
                         {% endfor %}
                     </div>
                 {% endif %}
-                {% if useFeierabend %}<a class="btn w-100 mt-2" href="{{ path('wtl_today_feierabend') }}"><i class="fas fa-flag-checkered me-1"></i>Tagesabschluss</a>{% endif %}
+                <div class="d-flex gap-2 mt-2">
+                    {% if useFeierabend %}<a class="btn flex-fill" href="{{ path('wtl_today_feierabend') }}"><i class="fas fa-flag-checkered me-1"></i>Tagesabschluss</a>{% endif %}
+                    {% if useReport and todays|length > 0 %}<a class="btn flex-fill" href="{{ path('wtl_report_day', {date: now|date('Y-m-d')}) }}"><i class="fas fa-file-signature me-1"></i>Bericht</a>{% endif %}
+                </div>
             {% else %}
             {% if running|length > 0 %}
                 {% set r = running|first %}

@@ -1,0 +1,57 @@
+<html><head><meta charset="utf-8"><style>
+body { font-family: sans-serif; font-size: 11pt; color: #222; }
+.head { width: 100%; border: 0.3mm solid #888; border-collapse: collapse; }
+.head td { padding: 2mm 3mm; vertical-align: middle; }
+.head .co { font-size: 9pt; color: #444; }
+.title { border: 0.4mm solid #555; text-align: center; font-size: 22pt; letter-spacing: 1px; padding: 3mm; margin: 12mm 8mm 10mm 8mm; }
+.f { width: 100%; border-collapse: collapse; margin: 0 0 0 0; }
+.f td { padding: 3.5mm 0 1mm 0; vertical-align: bottom; }
+.lbl { text-decoration: underline; white-space: nowrap; padding-right: 2mm !important; }
+.val { border-bottom: 0.25mm solid #333; font-weight: bold; }
+.cb { display: inline-block; width: 3.6mm; height: 3.6mm; border: 0.3mm solid #333; text-align: center; font-size: 9pt; line-height: 3.6mm; margin-left: 1mm; }
+.lines { margin-top: 6mm; }
+.line { border-bottom: 0.25mm solid #333; height: 9mm; line-height: 12mm; font-size: 10.5pt; overflow: hidden; }
+.foot { width: 100%; margin-top: 10mm; }
+.foot td { vertical-align: bottom; font-size: 8.5pt; color: #444; }
+.sig { border-top: 0.25mm solid #333; text-align: center; font-size: 11pt; color: #222; padding-top: 1mm; width: 60mm; }
+</style></head><body>
+{% for page in pages %}
+    {% if not loop.first %}<pagebreak>{% endif %}
+    <table class="head"><tr>
+        {% if logo %}<td style="width:38mm"><img src="{{ logo }}" style="max-height:16mm;max-width:36mm"></td>{% endif %}
+        <td class="co">{{ employer|nl2br }}</td>
+    </tr></table>
+    <div class="title">BAUSTELLENBERICHT</div>
+    <div style="margin: 0 8mm">
+        <table class="f"><tr><td class="lbl" style="width:22mm">Baustelle:</td><td class="val">{{ page.site }}</td></tr></table>
+        <table class="f"><tr>
+            <td class="lbl" style="width:22mm">Monteur:</td><td class="val">{{ user.displayName }}</td>
+            <td class="lbl" style="width:16mm;padding-left:4mm">Datum:</td><td class="val" style="width:30mm">{{ page.date|date('d.m.Y') }}</td>
+            <td class="lbl" style="width:10mm;padding-left:4mm">Tag:</td><td class="val" style="width:26mm">{{ page.weekday }}</td>
+        </tr></table>
+        <table class="f"><tr><td class="lbl" style="width:22mm">Stunden:</td><td class="val" style="width:50mm">{{ page.hours|number_format(2, ',', '.') }}</td><td></td></tr></table>
+        <table class="f" style="margin-top:6mm"><tr>
+            <td class="lbl" style="width:40mm">Aufmass:</td>
+            <td>ja <span style="font-family:dejavusans;font-size:13pt">{{ page.aufmass ? '☒' : '☐' }}</span> &nbsp;&nbsp;&nbsp; nein <span style="font-family:dejavusans;font-size:13pt">{{ page.aufmass ? '☐' : '☒' }}</span></td>
+        </tr><tr>
+            <td class="lbl">Regiebericht:</td>
+            <td>ja <span style="font-family:dejavusans;font-size:13pt">{{ page.regie ? '☒' : '☐' }}</span> &nbsp;&nbsp;&nbsp; nein <span style="font-family:dejavusans;font-size:13pt">{{ page.regie ? '☐' : '☒' }}</span></td>
+        </tr></table>
+        <div style="border-bottom:0.3mm solid #333; margin-top:3mm"></div>
+        <div style="margin-top:10mm">Tätigkeit:</div>
+        <div class="lines">
+            {% set textLines = page.text|split("\n") %}
+            {% set wrapped = [] %}
+            {% for l in textLines %}{% for w in l|u.wordwrap(85, "\n", true)|split("\n") %}{% set wrapped = wrapped|merge([w]) %}{% endfor %}{% endfor %}
+            {% for i in 0..(max(8, wrapped|length) - 1) %}<div class="line">{{ wrapped[i] ?? '' }}</div>{% endfor %}
+        </div>
+        <table class="foot"><tr>
+            <td>{{ employer|nl2br }}</td>
+            <td style="width:62mm; text-align:center">
+                {% if signature %}<img src="{{ signature }}" style="max-height:16mm;max-width:58mm"><br>{% endif %}
+                <div class="sig">Unterschrift</div>
+            </td>
+        </tr></table>
+    </div>
+{% endfor %}
+</body></html>

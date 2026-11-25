@@ -1,0 +1,24 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Baustellenberichte{% endblock %}
+{% block main %}
+<div class="d-flex gap-2 mb-3 align-items-center">
+    <a class="btn" href="{{ path('wtl_report', {month: month|date_modify('-1 month')|date('Y-m-d')}) }}"><i class="fas fa-chevron-left"></i></a>
+    <div class="flex-fill text-center fw-bold">{{ month|format_date(pattern: 'MMMM yyyy', locale: 'de') }}</div>
+    <a class="btn" href="{{ path('wtl_report', {month: month|date_modify('+1 month')|date('Y-m-d')}) }}"><i class="fas fa-chevron-right"></i></a>
+</div>
+<div class="d-flex gap-2 mb-3">
+    {% if days|length > 0 %}<a class="btn btn-primary flex-fill" href="{{ path('wtl_report_month_pdf', {month: month|date('Y-m-d')}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>Ganzer Monat als PDF</a>{% endif %}
+    <a class="btn {{ hasSignature ? '' : 'btn-outline-warning' }}" href="{{ path('wtl_report_setup') }}" title="Unterschrift & Logo"><i class="fas fa-signature me-1"></i>{{ hasSignature ? '' : 'Unterschrift' }}</a>
+</div>
+{% set wd = {Mon:'Mo',Tue:'Di',Wed:'Mi',Thu:'Do',Fri:'Fr',Sat:'Sa',Sun:'So'} %}
+<div class="list-group mb-3">
+    {% for d in days %}
+        <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ path('wtl_report_day', {date: d.date|date('Y-m-d'), project: d.project.id}) }}">
+            <div><div class="fw-bold">{{ wd[d.date|date('D')] }} {{ d.date|date('d.m.') }} · {{ d.project.name }}</div>{% if d.project.customer and d.project.customer.name != d.project.name %}<div class="small text-secondary">{{ d.project.customer.name }}</div>{% endif %}</div>
+            <div class="text-secondary small text-nowrap">{{ d.hours|number_format(2, ',', '.') }} h <i class="fas fa-chevron-right ms-1"></i></div>
+        </a>
+    {% else %}
+        <div class="list-group-item text-secondary">Keine Einsätze in diesem Monat.</div>
+    {% endfor %}
+</div>
+{% endblock %}

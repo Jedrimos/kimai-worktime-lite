@@ -702,6 +702,10 @@
         <source>wtl.cfg.today_stamp</source>
         <target>Heute: Start/Stopp-Knöpfe (aus = Zeiten manuell eintragen)</target>
       </trans-unit>
+      <trans-unit id="wtl175" resname="wtl.cfg.site_report">
+        <source>wtl.cfg.site_report</source>
+        <target>Baustellenbericht (Tagesbericht als PDF)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

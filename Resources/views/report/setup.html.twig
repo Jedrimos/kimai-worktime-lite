@@ -1,0 +1,53 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Unterschrift & Logo{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_report') %}
+<div class="card mb-3">
+    <div class="card-header"><strong>Meine Unterschrift</strong></div>
+    <div class="card-body">
+        {% if hasSignature %}
+            <img src="{{ path('wtl_report_asset', {type: 'signature'}) }}?v={{ v }}" style="max-width:100%;height:80px;object-fit:contain;border-bottom:1px solid #999" class="mb-2 d-block">
+            <form method="post" class="mb-3"><input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="signature_delete"><button class="btn btn-sm btn-ghost-danger">Löschen</button></form>
+            <div class="small text-secondary mb-1">Neu malen:</div>
+        {% endif %}
+        <canvas id="sig" style="width:100%;height:180px;border:1px dashed #999;border-radius:6px;touch-action:none;background:#fff"></canvas>
+        <form method="post" id="sig-form" class="d-flex gap-2 mt-2">
+            <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="signature"><input type="hidden" name="signature" id="sig-data">
+            <button type="button" class="btn" id="sig-clear">Leeren</button>
+            <button class="btn btn-primary flex-fill">Unterschrift speichern</button>
+        </form>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-header"><strong>Briefkopf</strong></div>
+    <div class="card-body">
+        <div class="small text-secondary mb-2">Firmenzeile: <strong style="white-space:pre-line">{{ employer ?: '– nicht eingetragen –' }}</strong><br>Kommt aus „Arbeitgeber“ in deinem Profil (Einstellungen) bzw. den Plugin-Einstellungen.</div>
+        {% if hasLogo %}
+            <img src="{{ path('wtl_report_asset', {type: 'logo'}) }}?v={{ v }}" style="max-height:60px" class="mb-2 d-block">
+            <form method="post" class="mb-2"><input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="logo_delete"><button class="btn btn-sm btn-ghost-danger">Logo löschen</button></form>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" class="d-flex gap-2">
+            <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="logo">
+            <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="form-control">
+            <button class="btn btn-primary">Logo hochladen</button>
+        </form>
+    </div>
+</div>
+<a class="btn w-100" href="{{ path('wtl_report') }}">Zurück zu den Berichten</a>
+<script>
+(function () {
+    var c = document.getElementById('sig'), ctx, drawing = false, dirty = false;
+    function size() { var r = c.getBoundingClientRect(), d = window.devicePixelRatio || 1; c.width = r.width * d; c.height = r.height * d; ctx = c.getContext('2d'); ctx.scale(d, d); ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#123'; }
+    size();
+    function pos(e) { var r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+    c.addEventListener('pointerdown', function (e) { drawing = true; dirty = true; var p = pos(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); c.setPointerCapture(e.pointerId); });
+    c.addEventListener('pointermove', function (e) { if (!drawing) { return; } var p = pos(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); });
+    c.addEventListener('pointerup', function () { drawing = false; });
+    document.getElementById('sig-clear').addEventListener('click', function () { ctx.clearRect(0, 0, c.width, c.height); dirty = false; });
+    document.getElementById('sig-form').addEventListener('submit', function (e) {
+        if (!dirty) { e.preventDefault(); return; }
+        document.getElementById('sig-data').value = c.toDataURL('image/png');
+    });
+})();
+</script>
+{% endblock %}
