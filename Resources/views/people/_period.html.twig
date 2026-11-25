@@ -1,0 +1,17 @@
+{# params: route, extra, period, from #}
+{% set prev = period == 'week' ? from|date_modify('-7 days') : (period == 'year' ? from|date_modify('-1 year') : from|date_modify('-1 month')) %}
+{% set next = period == 'week' ? from|date_modify('+7 days') : (period == 'year' ? from|date_modify('+1 year') : from|date_modify('+1 month')) %}
+<div class="btn-group w-100 mb-2">
+    {% for p, l in {week: 'Woche', month: 'Monat', year: 'Jahr'} %}
+        <a class="btn {{ period == p ? 'btn-primary' : '' }}" href="{{ path(route, extra|merge({period: p, date: from|date('Y-m-d')})) }}">{{ l }}</a>
+    {% endfor %}
+</div>
+<div class="d-flex gap-2 mb-3 align-items-center">
+    <a class="btn" href="{{ path(route, extra|merge({period: period, date: prev|date('Y-m-d')})) }}"><i class="fas fa-chevron-left"></i></a>
+    <div class="flex-fill text-center fw-bold">
+        {% if period == 'week' %}KW {{ from|date('W') }} · {{ from|date('d.m.') }}–{{ from|date_modify('+6 days')|date('d.m.Y') }}
+        {% elseif period == 'year' %}{{ from|date('Y') }}
+        {% else %}{{ from|format_date(pattern: 'MMMM yyyy', locale: 'de') }}{% endif %}
+    </div>
+    <a class="btn" href="{{ path(route, extra|merge({period: period, date: next|date('Y-m-d')})) }}"><i class="fas fa-chevron-right"></i></a>
+</div>

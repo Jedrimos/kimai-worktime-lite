@@ -1,0 +1,29 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}{{ name }}{% endblock %}
+{% block main %}
+<div class="d-flex gap-2 mb-2">
+    <a class="btn" href="{{ path('wtl_people', {period: period, date: from|date('Y-m-d')}) }}"><i class="fas fa-chevron-left me-1"></i>Alle</a>
+    <a class="btn btn-primary ms-auto" href="{{ path('wtl_person_pdf', {name: name, period: period, date: from|date('Y-m-d')}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF fürs Berichtsheft</a>
+</div>
+{% include '@WorkTimeLite/people/_period.html.twig' with {route: 'wtl_person', extra: {name: name}, period: period, from: from} only %}
+<div class="text-secondary small mb-2">{{ dayCount }} Tage zusammen · {{ total|duration }} h</div>
+{% set wd = {Mon:'Mo',Tue:'Di',Wed:'Mi',Thu:'Do',Fri:'Fr',Sat:'Sa',Sun:'So'} %}
+{% for week, days in weeks %}
+    <div class="card mb-3">
+        <div class="card-header py-2"><strong>KW {{ week|split('-')|last }}</strong></div>
+        <div class="list-group list-group-flush">
+            {% for d, day in days %}
+                <div class="list-group-item py-2">
+                    <div class="d-flex justify-content-between"><strong>{{ wd[day.date|date('D')] }} {{ day.date|date('d.m.Y') }}</strong><span>{{ day.seconds|duration }} h</span></div>
+                    {% for t in day.entries %}
+                        <div class="small"><span class="text-secondary">{{ t.begin|date('H:i', false) }}–{{ t.end ? t.end|date('H:i', false) }}</span> {{ t.project ? t.project.name }}{% if t.activity %} · {{ t.activity.name }}{% endif %}</div>
+                        {% if t.description %}<div class="small text-secondary ms-2" style="white-space:pre-line">{{ t.description }}</div>{% endif %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <div class="text-secondary text-center py-3">Keine gemeinsamen Einsätze in diesem Zeitraum.</div>
+{% endfor %}
+{% endblock %}

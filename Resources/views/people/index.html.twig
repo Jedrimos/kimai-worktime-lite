@@ -1,0 +1,15 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Mit wem{% endblock %}
+{% block main %}
+{% include '@WorkTimeLite/people/_period.html.twig' with {route: 'wtl_people', extra: {}, period: period, from: from} only %}
+<div class="list-group mb-3">
+    {% for n, c in counts %}
+        <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3" href="{{ path('wtl_person', {name: n, period: period, date: from|date('Y-m-d')}) }}">
+            <div><i class="fas fa-user me-2 text-secondary"></i><strong>{{ n }}</strong></div>
+            <div class="text-end small text-secondary">{{ c.days|length }} Tage<br>{{ c.seconds|duration }} h</div>
+        </a>
+    {% else %}
+        <div class="list-group-item text-secondary">Noch keine Namen. Trag Kollegen und Azubis in den Plugin-Einstellungen bei „Mit wem“ ein – dann kannst du sie beim Zeiteintrag antippen.</div>
+    {% endfor %}
+</div>
+{% endblock %}

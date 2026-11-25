@@ -83,6 +83,7 @@ final class Configuration implements ConfigurationInterface
                 ->scalarNode('ampel_red')->defaultValue('40')->end()
                 ->booleanNode('site_todos')->defaultTrue()->end()
                 ->booleanNode('site_photos')->defaultTrue()->end()
+                ->scalarNode('companions')->defaultValue('')->end()
                 ->scalarNode('custom_fields')->defaultValue('')->end()
                 ->scalarNode('zoll_employer')->defaultValue('')->end()
             ->end()

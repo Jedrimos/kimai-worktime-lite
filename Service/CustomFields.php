@@ -32,10 +32,6 @@ final class CustomFields
     public function getDefinitions(): array
     {
         $raw = $this->settings->string('custom_fields');
-        if ($raw === '') {
-            return [];
-        }
-
         $result = [];
         $seen = [];
         foreach (preg_split('/\R/u', $raw) ?: [] as $line) {
@@ -78,7 +74,40 @@ final class CustomFields
             $result[] = ['name' => $name, 'label' => $label, 'type' => $type, 'choices' => $choices, 'required' => $required];
         }
 
+        $names = $this->getCompanions();
+        if ($names !== []) {
+            $result[] = ['name' => self::COMPANIONS, 'label' => 'Mit wem', 'type' => 'companions', 'choices' => $names, 'required' => false];
+        }
+
         return $result;
+    }
+
+    public const COMPANIONS = 'wtl_mit_wem';
+
+    /**
+     * Kollegen/Azubis aus den Einstellungen (eine Zeile pro Name).
+     *
+     * @return array<int, string>
+     */
+    public function getCompanions(): array
+    {
+        $out = [];
+        foreach (preg_split('/\R/u', $this->settings->string('companions')) ?: [] as $line) {
+            $line = trim($line);
+            if ($line !== '' && !str_starts_with($line, '#')) {
+                $out[] = mb_substr($line, 0, 60);
+            }
+        }
+
+        return array_values(array_unique($out));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function splitCompanions(?string $value): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', (string) $value)), fn ($v) => $v !== ''));
     }
 
     private function slug(string $label): string
@@ -125,6 +154,11 @@ final class CustomFields
                         'placeholder' => $def['required'] ? null : '–',
                         'choice_translation_domain' => false,
                     ];
+                    break;
+                case 'companions':
+                    $meta->setType(TextType::class);
+                    $options += ['attr' => ['data-wtl-companions' => json_encode($def['choices'], JSON_UNESCAPED_UNICODE), 'placeholder' => 'Namen antippen']];
+                    $meta->addConstraint(new Length(max: 250));
                     break;
                 case 'textarea':
                     $meta->setType(TextareaType::class);

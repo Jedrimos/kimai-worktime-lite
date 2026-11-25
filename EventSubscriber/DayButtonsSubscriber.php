@@ -73,6 +73,8 @@ final class DayButtonsSubscriber implements EventSubscriberInterface
         });
     }
     function setTimes(form, begin, end, brk) {
+        form.dataset.wtlManual = '1';
+        var hint = form.querySelector('.wtl-begin-hint'); if (hint) { hint.remove(); }
         setVal(field(form, 'begin_time'), begin);
         setVal(field(form, 'end_time'), end);
         var b = field(form, 'break');
@@ -95,11 +97,11 @@ final class DayButtonsSubscriber implements EventSubscriberInterface
             bt.addEventListener('input', function () { if (!setting) { touched = true; } });
             bt.addEventListener('change', function () { if (!setting) { touched = true; } });
             function applyBegin() {
-                if (touched) { return; }
+                if (touched || form.dataset.wtlManual === '1') { return; }
                 fetch(cfg.url + '?date=' + encodeURIComponent(isoDate(form)), { credentials: 'same-origin' })
                     .then(function (r) { return r.json(); })
                     .then(function (d) {
-                        if (touched || !d.nextBegin) { return; }
+                        if (touched || form.dataset.wtlManual === '1' || !d.nextBegin) { return; }
                         setting = true; setVal(bt, d.nextBegin); setting = false;
                         var hint = form.querySelector('.wtl-begin-hint');
                         if (!hint) { hint = document.createElement('div'); hint.className = 'form-hint wtl-begin-hint'; bt.closest('.mb-3, .form-group, div').appendChild(hint); }
@@ -142,7 +144,7 @@ final class DayButtonsSubscriber implements EventSubscriberInterface
                         els.forEach(function (el) {
                             if (el.type === 'radio' || el.type === 'checkbox') { el.checked = (el.value === l.meta[k]); }
                             else if (el.tomselect) { el.tomselect.setValue(l.meta[k]); }
-                            else { el.value = l.meta[k]; }
+                            else { el.value = l.meta[k]; el.dispatchEvent(new Event('input', { bubbles: true })); }
                         });
                     });
                     var c = field(form, 'customer'), p = field(form, 'project'), a = field(form, 'activity');

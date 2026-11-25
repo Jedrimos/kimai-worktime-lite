@@ -65,6 +65,7 @@
     <div class="col-4"><div class="card"><div class="card-body p-2 text-center"><div class="text-secondary small">Tage vor Ort</div><div class="h2 mb-0">{{ o.stats.days ?? 0 }}</div></div></div></div>
     <a class="col-4" href="{{ path('wtl_site_project', {id: project.id, kind: 'material'}) }}" style="text-decoration:none"><div class="card"><div class="card-body p-2 text-center"><div class="text-secondary small">Material offen</div><div class="h2 mb-0 {{ o.openMaterial > 0 ? 'text-orange' }}">{{ o.openMaterial }}</div></div></div></a>
 </div>
+{% if o.with|length > 0 %}<div class="small mb-2"><i class="fas fa-user-friends me-1 text-secondary"></i>Mit dabei: {% for n, c in o.with %}<a href="{{ path('wtl_person', {name: n, period: 'year'}) }}">{{ n }}</a> ({{ c }}×){{ not loop.last ? ', ' }}{% endfor %}</div>{% endif %}
 {% if o.stats.first %}<div class="text-secondary small mb-2">Erster Tag {{ o.stats.first|date('d.m.Y', false) }} · zuletzt {{ o.stats.last|date('d.m.Y', false) }}</div>{% endif %}
 
 <div class="d-flex gap-2 mb-3 flex-wrap">

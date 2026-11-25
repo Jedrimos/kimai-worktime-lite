@@ -375,7 +375,19 @@ final class SiteController extends AbstractController
             ->orderBy('t.begin', 'DESC')->setMaxResults(8)
             ->getQuery()->getResult();
 
+        $with = [];
+        foreach ($recentAll = $this->timesheetRepository->createQueryBuilder('t')->join('t.meta', 'm')
+            ->where('t.user = :user')->andWhere('t.project = :project')->andWhere('m.name = :n')
+            ->setParameter('user', $user->getId())->setParameter('project', $project->getId())->setParameter('n', \KimaiPlugin\WorkTimeLiteBundle\Service\CustomFields::COMPANIONS)
+            ->getQuery()->getResult() as $t) {
+            foreach (\KimaiPlugin\WorkTimeLiteBundle\Service\CustomFields::splitCompanions($t->getMetaField(\KimaiPlugin\WorkTimeLiteBundle\Service\CustomFields::COMPANIONS)?->getValue()) as $n) {
+                $with[$n] = ($with[$n] ?? 0) + 1;
+            }
+        }
+        arsort($with);
+
         return [
+            'with' => $with,
             'customer' => $customer,
             'address' => $address,
             'mapsQuery' => $mapsQuery !== '' ? $mapsQuery : null,

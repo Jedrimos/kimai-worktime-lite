@@ -694,6 +694,10 @@
         <source>wtl.cfg.smart_begin</source>
         <target>Neuer Eintrag beginnt am Ende des letzten Eintrags (erster am Tag: Arbeitsbeginn)</target>
       </trans-unit>
+      <trans-unit id="wtl173" resname="wtl.cfg.companions">
+        <source>wtl.cfg.companions</source>
+        <target>„Mit wem“: Kollegen und Azubis (ein Name pro Zeile, leer = aus)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

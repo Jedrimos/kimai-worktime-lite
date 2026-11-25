@@ -100,6 +100,7 @@ final class SystemConfigurationSubscriber implements EventSubscriberInterface
         $config[] = $this->cfg('tax_km_rate')->setType(TextType::class);
         $config[] = $this->cfg('tax_km')->setType(TextType::class);
         $config[] = $this->cfg('tax_travel_minutes')->setType(TextType::class);
+        $config[] = $this->cfg('companions')->setType(TextareaType::class)->setOptions(['attr' => ['rows' => 4, 'placeholder' => "Max (Azubi)\nLisa"]]);
         $config[] = $this->cfg('custom_fields')->setType(TextareaType::class)->setOptions([
             'attr' => ['rows' => 6, 'placeholder' => "Regie | ja/nein\nBaustelle | text\nFahrzeug | auswahl: Crafter, Caddy\nTätigkeitsbericht | langtext"],
             'help' => 'wtl.cfg.custom_fields.help',
