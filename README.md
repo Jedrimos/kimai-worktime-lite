@@ -1,19 +1,29 @@
-# WorkTime Lite für Kimai
+# Handwerker Toolbox für Kimai
 
-Kleine, kostenlose Arbeitszeit-Erweiterung für [Kimai](https://www.kimai.org) (ab 2.73) für alle, die ihre eigenen Stunden für den Arbeitgeber sauber mitschreiben wollen.
+Monteur-App für [Kimai](https://www.kimai.org) (ab 2.73): Baustelle, Zeiten und Papierkram vom Handy aus – aufgeräumt, große Knöpfe, alles einzeln abschaltbar.
 
-## Funktionen
+## Baustelle
 
-- **Arbeitsvertrag erweitert** (Profil → Arbeitsvertrag): erster/letzter Arbeitstag, Urlaubstage pro Jahr, Wert eines Abwesenheitstages (automatisch *Wochenstunden ÷ Arbeitstage*, z. B. 39 h ÷ 5 = 7:48, oder fester Wert), Bundesland für Feiertage, Startsaldo.
-- **Abwesenheiten** (Arbeitszeiten → Abwesenheit): Urlaub, Krank, Überstundenabbau, Sonstiges – auch halbe Tage und Zeiträume. Wochenenden, Feiertage und gesperrte Monate werden übersprungen. Resturlaub und Krankheitstage auf einen Blick.
-- **Feiertage** aller Bundesländer (plus AT/CH), optional Mariä Himmelfahrt.
-- **Arbeitszeitkonto**: Überstunden gesamt seit dem ersten Arbeitstag, Urlaub/Krank werden mit dem Abwesenheitswert verrechnet.
-- **Monatsabschluss** (⋯-Menü bzw. Rechtsklick auf die Monatszeile): Vorschau des Stundenzettels, Monat sperren, per E-Mail senden, in einer Ablage speichern (Server-Ordner oder WebDAV, z. B. Nextcloud) und herunterladen – in einem Rutsch. Entsperren ebenfalls über das Menü.
-- **Eigene Felder** für Zeiteinträge (z. B. `Regie | ja/nein`, `Fahrzeug | auswahl: Crafter, Caddy`, `Tätigkeitsbericht | langtext`) – im Formular und als Spalte in Exportvorlagen.
-- **Schnell anlegen**: Kunde, Projekt oder Tätigkeit direkt im Zeiteintrag tippen → „+ „Name“ anlegen“.
-- **Meine Woche** (Menü Zeiterfassung): Wochennachweis fürs Handy mit Arbeitgeber, Einsatzorten, Von/Bis und Pausen – z. B. für Kontrollen durch den Zoll. Druckbar als PDF.
-- **Dashboard-Widget** „Arbeitszeitkonto & Urlaub“.
-- **Bequeme Zeiteingabe**: `7`, `7.00`, `7,00`, `700` → `07:00`. Optional in Dauer-Feldern `7.30` → 7 h 30 min.
+- **Heute** (Startseite): Start/Feierabend, Baustelle von heute mit Navi, Anrufen, Zugang/Schlüssel, Restarbeiten, Mitnehmen-Liste, Kacheln für offenes Material, Bus-Lager und Werkzeug, Überstunden-Ampel.
+- **Baustellen-Übersicht**: Kunde → Projekt, Status (geplant/läuft/fertig/abgerechnet), Adresse, Kontakt, eigene Stunden, wer mit dabei war.
+- **Zettel**: Aufmaß, Materialbestellung und Notizen mit beliebig vielen Positionen – häufigste Artikel als Schnellwahl, Vorlagen („Steckdose komplett“ × 5), PDF mit Überschrift.
+- **Bestellliste** über alle Baustellen nach Großhändler, Status offen → bestellt → geliefert.
+- **Fotos** pro Baustelle (auch Zählerstand und Typenschild), landen im Baustellenbericht.
+- **Noch zu machen**: Restarbeiten pro Baustelle und gesamt.
+- **Stromkreisliste** pro Verteiler mit PDF.
+- **Werkzeug-Tracker** und **Bus-Lager** (knapp → Bestellliste).
+- **Mit wem**: Kollegen/Azubis beim Zeiteintrag antippen, Übersicht und PDF pro Person (z. B. fürs Berichtsheft).
+- **Diktieren** per Mikrofon bei Textfeldern.
+
+## Arbeitszeit
+
+- **Arbeitsvertrag erweitert**: erster/letzter Arbeitstag, Urlaubstage (anteilig), Wert eines Abwesenheitstages (z. B. 39 h ÷ 5 = 7:48), Bundesland für Feiertage, Startsaldo.
+- **Abwesenheiten**: Urlaub, Krank, Überstundenabbau, Sonstiges – auch halbe Tage und Zeiträume.
+- **Arbeitszeitkonto** und Dashboard-Widget.
+- **Monatsabschluss** mit Check (fehlende Tage, Pausen, Überschneidungen), PDF-Vorschau, Sperren, E-Mail (eigener SMTP) und Ablage (Server-Ordner/WebDAV).
+- **Bequeme Eingabe**: `7`, `7.00`, `700` → `07:00`; neuer Eintrag beginnt am Ende des letzten; Knöpfe „Standardtag“ und „Wie letzter Tag“.
+- **Eigene Felder** (z. B. Regie ja/nein), **Schnell anlegen** von Kunde/Projekt/Tätigkeit, **Meine Woche** (Zoll-Nachweis), **Steuer-Hilfe** (Verpflegungstage, Arbeitstage, CSV).
+- **Handy-Leiste** unten: Heute · Baustellen · + Zeit · Zeiten · Mehr.
 
 ## Installation
 
@@ -23,9 +33,7 @@ git clone https://github.com/Jedrimos/kimai-worktime-lite.git WorkTimeLiteBundle
 cd /opt/kimai && bin/console kimai:reload --env=prod
 ```
 
-Danach unter **System → Einstellungen → WorkTime Lite** die Projekte/Tätigkeiten für Urlaub, Krank usw. sowie E-Mail und Ablage einstellen.
-
-Für den E-Mail-Versand muss Kimai einen Mailserver haben (`MAILER_URL`, `MAILER_FROM`).
+Der Ordnername `WorkTimeLiteBundle` bleibt aus technischen Gründen so. Danach unter **System → Einstellungen → Handwerker Toolbox** einstellen. Die Tabellen für Baustellen-Daten legt das Plugin beim ersten Aufruf selbst an.
 
 ## Lizenz
 

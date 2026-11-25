@@ -18,7 +18,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 /**
- * System → Einstellungen → WorkTime Lite
+ * System → Einstellungen → Handwerker Toolbox
  */
 final class SystemConfigurationSubscriber implements EventSubscriberInterface
 {

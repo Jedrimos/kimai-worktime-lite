@@ -93,7 +93,7 @@ final class MonthController extends AbstractController
     {
         $to = $this->settings->string('smtp_from') ?: $this->settings->string('smtp_user') ?: (string) $this->getUser()->getEmail();
         try {
-            $mailer->send((new Email())->to($to)->subject('WorkTime Lite: Testmail')->text('Der Mailversand aus Kimai funktioniert.'));
+            $mailer->send((new Email())->to($to)->subject('Handwerker Toolbox: Testmail')->text('Der Mailversand aus Kimai funktioniert.'));
             $this->addFlash('info', 'Testmail gesendet an ' . $to . ($mailer->hasOwnSmtp() ? ' (eigener SMTP)' : ' (Kimai-Mailserver)'));
         } catch (\Throwable $ex) {
             $this->addFlash('error', 'Testmail fehlgeschlagen: ' . $ex->getMessage());

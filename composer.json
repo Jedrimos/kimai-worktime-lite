@@ -1,14 +1,14 @@
 {
     "name": "jedrimos/worktime-lite-bundle",
-    "description": "WorkTime Lite: Arbeitsbeginn, Abwesenheiten (Urlaub/Krank), Feiertage, Monatsabschluss mit PDF-Versand und bequeme Zeiteingabe für Kimai",
+    "description": "Handwerker Toolbox: Monteur-App für Kimai – Baustellen (Aufmaß, Material, Fotos, Restarbeiten, Stromkreise), Heute-Dashboard, Arbeitszeitkonto, Abwesenheiten, Monatsabschluss mit PDF-Versand",
     "type": "kimai-plugin",
-    "version": "0.9.0",
+    "version": "1.0.0",
     "license": "MIT",
     "keywords": ["kimai", "kimai-plugin"],
     "extra": {
         "kimai": {
             "require": 27300,
-            "name": "WorkTime Lite"
+            "name": "Handwerker Toolbox"
         }
     },
     "autoload": {

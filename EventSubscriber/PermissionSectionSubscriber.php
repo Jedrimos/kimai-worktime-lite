@@ -17,6 +17,6 @@ final class PermissionSectionSubscriber implements EventSubscriberInterface
 
     public function onEvent(PermissionSectionsEvent $event): void
     {
-        $event->addSection(new PermissionSection('WorkTime Lite', 'wtl_'));
+        $event->addSection(new PermissionSection('Handwerker Toolbox', 'wtl_'));
     }
 }

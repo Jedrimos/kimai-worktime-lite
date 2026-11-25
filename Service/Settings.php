@@ -5,7 +5,7 @@ namespace KimaiPlugin\WorkTimeLiteBundle\Service;
 use App\Configuration\SystemConfiguration;
 
 /**
- * Zugriff auf die globalen Einstellungen (System → Einstellungen → WorkTime Lite).
+ * Zugriff auf die globalen Einstellungen (System → Einstellungen → Handwerker Toolbox).
  */
 final class Settings
 {

@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="wtl0" resname="wtl.settings">
         <source>wtl.settings</source>
-        <target>WorkTime Lite</target>
+        <target>Handwerker Toolbox</target>
       </trans-unit>
       <trans-unit id="wtl1" resname="wtl.days">
         <source>wtl.days</source>
@@ -572,7 +572,7 @@
       </trans-unit>
       <trans-unit id="wtl142" resname="worktime_lite">
         <source>worktime_lite</source>
-        <target>WorkTime Lite</target>
+        <target>Handwerker Toolbox</target>
       </trans-unit>
       <trans-unit id="wtl143" resname="wtl.check.ok">
         <source>wtl.check.ok</source>
