@@ -41,6 +41,20 @@
     <div class="card mb-3 {{ running|length > 0 ? 'border-success' }}" style="{{ running|length > 0 ? 'border-width:2px' }}">
         <div class="card-body">
             {% if longRunning %}<div class="alert alert-warning py-2 mb-2"><i class="fas fa-exclamation-triangle me-1"></i>Zeit läuft schon über 10 Stunden – vergessen zu stoppen?</div>{% endif %}
+            {% if not stamp %}
+                <a class="btn btn-success w-100 btn-xl" href="{{ path('timesheet_create') }}"><i class="fas fa-plus me-2"></i>Zeit eintragen</a>
+                {% if todays|length > 0 %}
+                    <div class="mt-2 small">
+                        {% for t in todays %}
+                            <div class="d-flex justify-content-between border-top pt-1 mt-1">
+                                <span>{{ t.begin|date('H:i', false) }}–{{ t.end ? t.end|date('H:i', false) : '…' }} {{ t.project ? t.project.name }}</span>
+                                <span class="text-secondary">{{ t.end ? t.duration|duration : '' }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if useFeierabend %}<a class="btn w-100 mt-2" href="{{ path('wtl_today_feierabend') }}"><i class="fas fa-flag-checkered me-1"></i>Tagesabschluss</a>{% endif %}
+            {% else %}
             {% if running|length > 0 %}
                 {% set r = running|first %}
                 <div class="mb-2"><span class="badge bg-success text-white me-1">läuft</span> seit {{ r.begin|date('H:i', false) }} · {{ r.project ? r.project.name }}</div>
@@ -64,6 +78,7 @@
                     <a class="btn btn-xl {{ siteTs ? '' : 'btn-success flex-fill' }}" href="{{ path('timesheet_create') }}" title="Anderes Projekt / nachtragen"><i class="fas fa-plus"></i>{% if not siteTs %} Eintrag{% endif %}</a>
                 </div>
                 {% if siteTs %}<div class="small text-secondary mt-1">Start auf: {{ siteTs.project.name }} · {{ siteTs.activity ? siteTs.activity.name }}</div>{% endif %}
+            {% endif %}
             {% endif %}
             <div class="small text-secondary mt-2">Heute {{ worked|duration }} h{% if soll > 0 %} von {{ soll|duration }} h{% endif %}</div>
         </div>

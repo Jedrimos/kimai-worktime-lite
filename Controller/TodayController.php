@@ -149,6 +149,7 @@ final class TodayController extends AbstractController
             'stockLow' => $stockLow,
             'runningSites' => $running_sites,
             'useFeierabend' => $this->settings->bool('site_feierabend', true),
+            'stamp' => $this->settings->bool('today_stamp', false),
             'now' => $now,
             'running' => $running,
             'todays' => $todays,
@@ -244,6 +245,23 @@ final class TodayController extends AbstractController
         $ts = $running[0] ?? null;
         $project = $ts?->getProject();
 
+        $stamp = $this->settings->bool('today_stamp', false);
+        if (!$stamp || $ts === null) {
+            // Tagesabschluss ohne Stoppen: Baustelle = zuletzt heute eingetragen
+            $ts = null;
+            $todayEntries = $this->timesheetRepository->createQueryBuilder('t')->where('t.user = :u')->andWhere('t.date = :d')
+                ->setParameter('u', $user->getId())->setParameter('d', (new \DateTimeImmutable('now', $tz))->format('Y-m-d'))
+                ->orderBy('t.begin', 'DESC')->getQuery()->getResult();
+            $absence = array_map(fn ($ids) => $ids['project'], $this->settings->getConfiguredAbsenceTypes());
+            $project = null;
+            foreach ($todayEntries as $t) {
+                if ($t->getProject() !== null && !\in_array($t->getProject()->getId(), $absence, true)) {
+                    $project = $t->getProject();
+                    break;
+                }
+            }
+        }
+
         if ($request->isMethod('POST') && $this->isCsrfTokenValid('wtl_today', (string) $request->request->get('_token'))) {
             if ($ts !== null) {
                 try {
@@ -294,15 +312,13 @@ final class TodayController extends AbstractController
             return $this->redirectToRoute('wtl_today');
         }
 
-        if ($ts === null) {
-            return $this->redirectToRoute('wtl_today');
-        }
         $now = new \DateTimeImmutable('now', $tz);
         $min = (int) $now->format('i');
         $rounded = $now->setTime((int) $now->format('H'), $min - $min % 5);
 
         return $this->render('@WorkTimeLite/feierabend.html.twig', [
             'ts' => $ts,
+            'stamp' => $ts !== null,
             'project' => $project,
             'end' => $rounded->format('H:i'),
             'breakActive' => $this->systemConfiguration->isBreakTimeEnabled(),

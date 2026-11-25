@@ -640,7 +640,7 @@
       </trans-unit>
       <trans-unit id="wtl159" resname="wtl.cfg.site_feierabend">
         <source>wtl.cfg.site_feierabend</source>
-        <target>Heute: Feierabend-Check</target>
+        <target>Heute: Feierabend-Check / Tagesabschluss</target>
       </trans-unit>
       <trans-unit id="wtl160" resname="wtl.cfg.site_packlist">
         <source>wtl.cfg.site_packlist</source>
@@ -697,6 +697,10 @@
       <trans-unit id="wtl173" resname="wtl.cfg.companions">
         <source>wtl.cfg.companions</source>
         <target>„Mit wem“: Kollegen und Azubis (ein Name pro Zeile, leer = aus)</target>
+      </trans-unit>
+      <trans-unit id="wtl174" resname="wtl.cfg.today_stamp">
+        <source>wtl.cfg.today_stamp</source>
+        <target>Heute: Start/Stopp-Knöpfe (aus = Zeiten manuell eintragen)</target>
       </trans-unit>
     </body>
   </file>

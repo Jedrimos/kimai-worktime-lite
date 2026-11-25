@@ -88,6 +88,7 @@ final class SystemConfigurationSubscriber implements EventSubscriberInterface
         $config[] = $this->cfg('site_circuits')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_meters')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_feierabend')->setType(CheckboxType::class);
+        $config[] = $this->cfg('today_stamp')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_packlist')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_ampel')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_tools')->setType(CheckboxType::class);

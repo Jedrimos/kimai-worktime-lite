@@ -44,6 +44,8 @@ final class MobileNavSubscriber implements EventSubscriberInterface
             ['href' => '#menu', 'icon' => 'fa-bars', 'label' => 'Mehr', 'match' => '#'],
         ];
         $config = json_encode($items, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        // ohne Stempeln: Start/Stopp- und "Neu starten"-Knöpfe oben am Handy ausblenden (unten gibt's + Zeit)
+        $hideStamp = $this->settings->bool('today_stamp', false) ? '' : 'body.wtl-mobile .navbar .ticktac, body.wtl-mobile .navbar .recent-activities { display: none !important; }';
 
         $event->addContent(<<<HTML
 <style>
@@ -64,6 +66,7 @@ final class MobileNavSubscriber implements EventSubscriberInterface
     body.wtl-mobile .float-help, body.wtl-mobile .btn-help-float, body.wtl-mobile a.help-float { display: none !important; }
     body.wtl-mobile .container-fluid, body.wtl-mobile .container-xl { padding-left: .6rem; padding-right: .6rem; }
     body.wtl-mobile .btn { min-height: 2.5rem; }
+    {$hideStamp}
 }
 @media (min-width: 992px) { .wtl-bottom-nav { display: none; } }
 </style>
