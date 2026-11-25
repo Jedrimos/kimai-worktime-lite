@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}Werkzeug{% endblock %}
-{% block main %}
+{% block wtl %}
 {% set token = csrf_token('wtl_tools') %}
 <form method="post" class="d-flex gap-2 mb-3">
     <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="add">

@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}{{ name }}{% endblock %}
-{% block main %}
+{% block wtl %}
 <div class="d-flex gap-2 mb-2">
     <a class="btn" href="{{ path('wtl_people', {period: period, date: from|date('Y-m-d')}) }}"><i class="fas fa-chevron-left me-1"></i>Alle</a>
     <a class="btn btn-primary ms-auto" href="{{ path('wtl_person_pdf', {name: name, period: period, date: from|date('Y-m-d')}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF fürs Berichtsheft</a>

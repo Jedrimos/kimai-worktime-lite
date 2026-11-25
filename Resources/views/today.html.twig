@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'wide' %}
 {% block page_title %}Heute{% endblock %}
-{% block main %}
+{% block wtl %}
 {% set token = csrf_token('wtl_today') %}
 {% set stoken = csrf_token('wtl_site') %}
 <style>

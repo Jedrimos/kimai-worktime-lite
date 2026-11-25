@@ -1,7 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
 {% import '@WorkTimeLite/site/_macros.html.twig' as m %}
 {% block page_title %}{{ titles[kind] }}{% endblock %}
-{% block main %}
+{% block wtl %}
 {% set token = csrf_token('wtl_site') %}
 <style>
     .wtl-site .wtl-qty { min-width: 5.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -47,18 +47,16 @@
     {% else %}
         <div id="wtl-rows" data-unit="{{ defUnit }}">
             {% for i in 0..2 %}
-                <div class="wtl-line mb-2">
-                    <div class="d-flex gap-1">
-                        <input type="text" name="rows[{{ i }}][quantity]" class="form-control" style="max-width:5.5rem" inputmode="decimal" placeholder="Menge">
-                        <input type="text" name="rows[{{ i }}][unit]" class="form-control" style="max-width:5rem" list="wtl-units" value="{{ defUnit }}">
-                        <input type="text" name="rows[{{ i }}][text]" class="form-control" placeholder="{{ kind == 'aufmass' ? 'z. B. NYM-J 3x1,5 UP' : 'z. B. Schalter Gira E2' }}" list="wtl-suggest" data-wtl-dictate>
-                    </div>
-                    <input type="text" name="rows[{{ i }}][room]" class="form-control form-control-sm mt-1" placeholder="Raum / Stelle (optional)" list="wtl-rooms">
+                <div class="wtl-line mb-2 row g-1">
+                    <div class="col-3 col-lg-1 order-2 order-lg-1"><input type="text" name="rows[{{ i }}][quantity]" class="form-control" inputmode="decimal" placeholder="Menge"></div>
+                    <div class="col-3 col-lg-1 order-3 order-lg-2"><input type="text" name="rows[{{ i }}][unit]" class="form-control" list="wtl-units" value="{{ defUnit }}"></div>
+                    <div class="col-12 col-lg-6 order-1 order-lg-3"><input type="text" name="rows[{{ i }}][text]" class="form-control" placeholder="{{ kind == 'aufmass' ? 'z. B. NYM-J 3x1,5 UP' : 'z. B. Schalter Gira E2' }}" list="wtl-suggest" data-wtl-dictate></div>
+                    <div class="col-6 col-lg-4 order-4"><input type="text" name="rows[{{ i }}][room]" class="form-control form-control-sm-mobile" placeholder="Raum / Stelle" list="wtl-rooms"></div>
                 </div>
             {% endfor %}
         </div>
     {% endif %}
-    <button type="button" class="btn btn-sm w-100 mb-2" id="wtl-addrow"><i class="fas fa-plus me-1"></i>Weitere Zeile</button>
+    <button type="button" class="btn btn-sm w-100 wtl-desk-auto mb-2" id="wtl-addrow"><i class="fas fa-plus me-1"></i>Weitere Zeile</button>
 {% endmacro %}
 
 {% if sheet is null %}
@@ -69,7 +67,7 @@
             {{ _self.head_fields(kind, null, today, suppliers) }}
             <hr class="my-3">
             {{ _self.rows(kind, defUnit, favorites, templates) }}
-            <button class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Speichern</button>
+            <button class="btn btn-primary w-100 wtl-desk-auto px-4"><i class="fas fa-save me-1"></i>Speichern</button>
         </div>
     </form>
 {% else %}
@@ -123,7 +121,7 @@
         <div class="card-body">
             <input type="hidden" name="_token" value="{{ token }}">
             {{ _self.rows(kind, defUnit, favorites, templates) }}
-            <button class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Hinzufügen</button>
+            <button class="btn btn-primary w-100 wtl-desk-auto px-4"><i class="fas fa-save me-1"></i>Hinzufügen</button>
         </div>
     </form>
 
@@ -152,6 +150,10 @@
     function addRow() {
         var lines = box.querySelectorAll('.wtl-line'), last = lines[lines.length - 1];
         var n = lines.length, row = last.cloneNode(true);
+        // Diktier-Knopf nicht mitkopieren – wird für die neue Zeile neu angehängt
+        row.querySelectorAll('.wtl-dict-btn').forEach(function (b) { b.remove(); });
+        row.querySelectorAll('.wtl-dict-wrap').forEach(function (w) { var i = w.querySelector('input, textarea'); w.parentNode.insertBefore(i, w); w.remove(); });
+        row.querySelectorAll('[data-wtl-dict-ok]').forEach(function (i) { delete i.dataset.wtlDictOk; });
         row.querySelectorAll('input, textarea').forEach(function (inp) {
             inp.name = inp.name.replace(/rows\[\d+\]/, 'rows[' + n + ']');
             if (/\[unit\]$/.test(inp.name)) { inp.value = last.querySelector('[name$="[unit]"]').value || box.dataset.unit; }

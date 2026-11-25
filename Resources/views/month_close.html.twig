@@ -1,11 +1,11 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
 {% from "macros/widgets.html.twig" import work_times_result %}
 
 {% block page_title %}
     {{ 'wtl.close.title'|trans }}: {{ monthName }} {{ monthDate|date('Y') }} – {{ profile.displayName }}
 {% endblock %}
 
-{% block main %}
+{% block wtl %}
     {% set should = month.expectedTime(now) %}
     {% set actual = month.actualTime %}
 

@@ -1,6 +1,6 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
 {% block page_title %}{{ project.name }}{% endblock %}
-{% block main %}
+{% block wtl %}
 <div class="d-flex gap-2 mb-3 flex-wrap">
     <a class="btn" href="{{ path('wtl_site') }}"><i class="fas fa-chevron-left me-1"></i>Baustellen</a>
     <a class="btn" href="{{ path('wtl_site_orders') }}"><i class="fas fa-truck me-1"></i>Bestellliste</a>
@@ -18,6 +18,7 @@
 {% set o = overview %}
 {% set token = csrf_token('wtl_site') %}
 {% set back = path('wtl_site_project', {id: project.id}) %}
+<div class="row g-3"><div class="col-lg-5">
 <div class="card mb-3" style="border-top-left-radius:0;border-top-right-radius:0">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-start gap-2">
@@ -89,6 +90,7 @@
     </form>
 </details>
 {% endif %}
+</div><div class="col-lg-7">
 {% if o.todos is not null %}
     {% include '@WorkTimeLite/site/_todo_card.html.twig' with {project: project, todos: o.todos, back: path('wtl_site_project', {id: project.id}), token: token} only %}
 {% endif %}
@@ -144,15 +146,17 @@
     </div>
 </div>
 {% endif %}
+</div></div>
 {% else %}
 <div class="card mb-3" style="border-top-left-radius:0;border-top-right-radius:0">
     <div class="card-body">
-        <a class="btn btn-primary w-100" href="{{ path('wtl_site_sheet_new', {id: project.id, kind: kind}) }}"><i class="fas fa-plus me-1"></i>Neue{{ kind == 'aufmass' ? 's' }} {{ titles[kind] == 'Notizen' ? 'Notiz' : titles[kind] }}</a>
+        <a class="btn btn-primary w-100 wtl-desk-auto" href="{{ path('wtl_site_sheet_new', {id: project.id, kind: kind}) }}"><i class="fas fa-plus me-1"></i>Neue{{ kind == 'aufmass' ? 's' }} {{ titles[kind] == 'Notizen' ? 'Notiz' : titles[kind] }}</a>
     </div>
 </div>
 
+<div class="row g-2">
 {% for sheet in sheets %}
-    <a class="card card-link mb-2" href="{{ path('wtl_site_sheet', {sid: sheet.id}) }}">
+    <div class="col-lg-6"><a class="card card-link mb-0 h-100" href="{{ path('wtl_site_sheet', {sid: sheet.id}) }}">
         <div class="card-body py-2 d-flex justify-content-between align-items-center gap-2">
             <div>
                 <div class="fw-bold">{{ titles[sheet.kind] }} vom {{ sheet.sheet_date|date('d.m.Y', false) }}</div>
@@ -163,9 +167,10 @@
                 {% if sheet.kind == 'material' and sheet.open_items > 0 %}<br><span class="badge bg-orange-lt mt-1">{{ sheet.open_items }} offen</span>{% endif %}
             </div>
         </div>
-    </a>
+    </a></div>
 {% else %}
     <div class="text-secondary text-center py-3">Noch nichts angelegt.</div>
 {% endfor %}
+</div>
 {% endif %}
 {% endblock %}

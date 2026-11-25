@@ -1,7 +1,8 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% import '@WorkTimeLite/site/_macros.html.twig' as m %}
 {% block page_title %}Bestellliste{% endblock %}
-{% block main %}
+{% block wtl %}
 {% set token = csrf_token('wtl_site') %}
 <div class="d-flex gap-2 mb-3 flex-wrap">
     <a class="btn" href="{{ path('wtl_site') }}"><i class="fas fa-chevron-left me-1"></i>Baustellen</a>

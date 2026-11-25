@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}Unterschrift & Logo{% endblock %}
-{% block main %}
+{% block wtl %}
 {% set token = csrf_token('wtl_report') %}
 <div class="card mb-3">
     <div class="card-header"><strong>Meine Unterschrift</strong></div>

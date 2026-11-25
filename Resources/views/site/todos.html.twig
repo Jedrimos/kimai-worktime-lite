@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}Noch zu machen{% endblock %}
-{% block main %}
+{% block wtl %}
 {% set token = csrf_token('wtl_site') %}
 {% set back = path('wtl_site_todos') %}
 {% for pid, g in groups %}

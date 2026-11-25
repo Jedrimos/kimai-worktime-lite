@@ -1,10 +1,10 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
 
 {% block page_title %}
     {{ 'wtl.absence.title'|trans }}{% if not isSelf %} – {{ profile.displayName }}{% endif %}
 {% endblock %}
 
-{% block main %}
+{% block wtl %}
     {% if not configured %}
         <div class="alert alert-warning">
             {{ 'wtl.absence.not_configured'|trans }}

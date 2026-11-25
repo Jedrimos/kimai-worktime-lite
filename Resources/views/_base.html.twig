@@ -1,0 +1,28 @@
+{% extends 'page_setup.html.twig' %}
+{#
+  Gemeinsamer Rahmen für alle Seiten der Handwerker Toolbox.
+  Handy (< 992 px): große Knöpfe, alles untereinander.
+  PC (>= 992 px): normale Kimai-Optik, Spalten, kompakte Knöpfe, begrenzte Breite.
+  Seiten setzen wtl_width: 'narrow' (Listen), 'normal' (Standard) oder 'wide' (Dashboards).
+#}
+{% block main %}
+<style>
+    .wtl-page { margin: 0 auto; }
+    @media (min-width: 992px) {
+        .wtl-page { max-width: 1320px; }
+        .wtl-page.wtl-narrow { max-width: 860px; }
+        .wtl-page.wtl-wide { max-width: none; }
+        /* PC: normale Knopfgrößen statt Handy-Riesenknöpfe */
+        .wtl-page .btn-xl { padding: .45rem 1rem !important; font-size: .95rem !important; }
+        .wtl-page .btn-lg { padding: .45rem 1rem; font-size: .95rem; }
+        .wtl-page .wtl-desk-auto { width: auto !important; }
+        .wtl-page .wtl-mobile-only { display: none !important; }
+    }
+    @media (max-width: 991.98px) {
+        .wtl-page .wtl-desktop-only { display: none !important; }
+    }
+</style>
+<div class="wtl-page wtl-{{ wtl_width|default('normal') }}">
+    {% block wtl %}{% endblock %}
+</div>
+{% endblock %}

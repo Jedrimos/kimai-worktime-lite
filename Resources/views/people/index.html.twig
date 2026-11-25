@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}Mit wem{% endblock %}
-{% block main %}
+{% block wtl %}
 {% include '@WorkTimeLite/people/_period.html.twig' with {route: 'wtl_people', extra: {}, period: period, from: from} only %}
 <div class="list-group mb-3">
     {% for n, c in counts %}

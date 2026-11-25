@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}Steuer-Hilfe {{ year }}{% endblock %}
-{% block main %}
+{% block wtl %}
 <div class="d-flex gap-2 mb-3">
     <a class="btn" href="{{ path('wtl_tax', {year: year - 1}) }}"><i class="fas fa-chevron-left"></i></a>
     <span class="btn disabled flex-fill fw-bold">{{ year }}</span>

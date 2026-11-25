@@ -1,8 +1,8 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
 
 {% block page_title %}{{ 'wtl.week.title'|trans }}{% endblock %}
 
-{% block main %}
+{% block wtl %}
 <style>
     .wtl-week .wtl-day { border-left: 4px solid var(--tblr-primary); }
     .wtl-week .wtl-day.wtl-empty { border-left-color: var(--tblr-border-color); opacity: .75; }

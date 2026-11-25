@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}Baustellenberichte{% endblock %}
-{% block main %}
+{% block wtl %}
 <div class="d-flex gap-2 mb-3 align-items-center">
     <a class="btn" href="{{ path('wtl_report', {month: month|date_modify('-1 month')|date('Y-m-d')}) }}"><i class="fas fa-chevron-left"></i></a>
     <div class="flex-fill text-center fw-bold">{{ month|format_date(pattern: 'MMMM yyyy', locale: 'de') }}</div>

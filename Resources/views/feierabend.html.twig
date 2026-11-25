@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}{{ stamp ? 'Feierabend' : 'Tagesabschluss' }}{% endblock %}
-{% block main %}
+{% block wtl %}
 <form method="post" class="card mb-3">
     <div class="card-body">
         <input type="hidden" name="_token" value="{{ csrf_token('wtl_today') }}">

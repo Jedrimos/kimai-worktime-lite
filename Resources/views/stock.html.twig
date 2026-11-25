@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}Bus-Lager{% endblock %}
-{% block main %}
+{% block wtl %}
 {% set token = csrf_token('wtl_stock') %}
 <div class="form-hint mb-2">Antippen = <strong>knapp</strong> → landet in der Bestellliste. Nochmal antippen = aufgefüllt.</div>
 <div class="card mb-3">

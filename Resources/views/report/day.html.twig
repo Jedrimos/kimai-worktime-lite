@@ -1,6 +1,7 @@
-{% extends 'page_setup.html.twig' %}
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set wtl_width = 'narrow' %}
 {% block page_title %}Baustellenbericht{% endblock %}
-{% block main %}
+{% block wtl %}
 <form method="post" target="_blank" class="card mb-3">
     <div class="card-body">
         <div class="mb-2"><label class="form-label">Baustelle</label><input type="text" name="site" class="form-control" value="{{ data.site }}"></div>
