@@ -1,0 +1,29 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Bus-Lager{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_stock') %}
+<div class="form-hint mb-2">Antippen = <strong>knapp</strong> → landet in der Bestellliste. Nochmal antippen = aufgefüllt.</div>
+<div class="card mb-3">
+    <div class="list-group list-group-flush">
+        {% for it in items %}
+            <div class="list-group-item py-2 d-flex align-items-center gap-2">
+                <form method="post" class="flex-fill"><input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="{{ it.id }}">
+                    <button class="btn w-100 justify-content-start {{ it.low ? 'btn-danger' : '' }}" style="text-align:left">
+                        <i class="fas {{ it.low ? 'fa-exclamation-circle' : 'fa-check-circle text-success' }} me-2"></i>{{ it.text }}{% if it.low %}<span class="ms-auto small">knapp</span>{% endif %}
+                    </button></form>
+                <form method="post" onsubmit="return confirm('Artikel löschen?')"><input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ it.id }}">
+                    <button class="btn btn-sm btn-ghost-danger p-1"><i class="fas fa-times"></i></button></form>
+            </div>
+        {% else %}
+            <div class="list-group-item text-secondary">Noch leer. Trag ein, was du immer im Bus haben willst.</div>
+        {% endfor %}
+    </div>
+</div>
+<form method="post" class="card">
+    <div class="card-body">
+        <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="add">
+        <textarea name="text" class="form-control mb-2" rows="2" placeholder="Artikel, eine Zeile pro Artikel (z. B. Wago 221-413)" data-wtl-dictate></textarea>
+        <button class="btn btn-primary w-100"><i class="fas fa-plus me-1"></i>Hinzufügen</button>
+    </div>
+</form>
+{% endblock %}

@@ -53,6 +53,10 @@ td.c { width: 8mm; }
     <div class="doctitle">Materialbestellung</div>
     <h1>Bestellliste – alle Baustellen</h1>
     <div class="meta">{{ user.displayName }} · Stand {{ now|date('d.m.Y H:i', false) }}</div>
+    {% if stockLow is defined and stockLow|length > 0 %}
+        <h2>Bus-Lager auffüllen</h2>
+        <table><tr><th class="c"></th><th>Artikel</th></tr>{% for it in stockLow %}<tr><td class="c"><span class="box"></span></td><td>{{ it.text }}</td></tr>{% endfor %}</table>
+    {% endif %}
     {% for supplier, items in groups %}
         <h2>{{ supplier }}</h2>
         <table>

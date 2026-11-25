@@ -129,7 +129,10 @@ final class SiteController extends AbstractController
         $user = $this->getUser();
         $all = $request->query->getBoolean('all');
 
-        return $this->render('@WorkTimeLite/site/orders.html.twig', $this->ordersData($user, $all) + ['all' => $all]);
+        return $this->render('@WorkTimeLite/site/orders.html.twig', $this->ordersData($user, $all) + [
+            'all' => $all,
+            'stockLow' => $this->settings->bool('site_stock', true) ? $this->monteur->stock($user->getId(), true) : [],
+        ]);
     }
 
     #[Route(path: '/orders/pdf', name: 'wtl_site_orders_pdf', methods: ['GET'])]
@@ -137,6 +140,7 @@ final class SiteController extends AbstractController
     {
         $user = $this->getUser();
         $html = $this->renderView('@WorkTimeLite/site/pdf.html.twig', $this->ordersData($user, $request->query->getBoolean('all')) + [
+            'stockLow' => $this->settings->bool('site_stock', true) ? $this->monteur->stock($user->getId(), true) : [],
             'mode' => 'orders',
             'user' => $user,
             'now' => new \DateTimeImmutable('now', new \DateTimeZone($user->getTimezone())),

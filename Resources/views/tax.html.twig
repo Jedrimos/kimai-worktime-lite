@@ -1,0 +1,33 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Steuer-Hilfe {{ year }}{% endblock %}
+{% block main %}
+<div class="d-flex gap-2 mb-3">
+    <a class="btn" href="{{ path('wtl_tax', {year: year - 1}) }}"><i class="fas fa-chevron-left"></i></a>
+    <span class="btn disabled flex-fill fw-bold">{{ year }}</span>
+    <a class="btn" href="{{ path('wtl_tax', {year: year + 1}) }}"><i class="fas fa-chevron-right"></i></a>
+    <a class="btn btn-primary" href="{{ path('wtl_tax_csv', {year: year}) }}"><i class="fas fa-file-csv me-1"></i>CSV</a>
+</div>
+<div class="row g-2 mb-3">
+    <div class="col-6"><div class="card"><div class="card-body p-2 text-center"><div class="small text-secondary">Arbeitstage</div><div class="h1 mb-0">{{ total.days }}</div></div></div></div>
+    <div class="col-6"><div class="card"><div class="card-body p-2 text-center"><div class="small text-secondary">Tage über 8 h weg</div><div class="h1 mb-0">{{ total.meal_days }}</div></div></div></div>
+    <div class="col-6"><div class="card"><div class="card-body p-2 text-center"><div class="small text-secondary">Verpflegung ({{ mealRate|number_format(2, ',', '.') }} €/Tag)</div><div class="h2 mb-0">{{ total.meal|number_format(2, ',', '.') }} €</div></div></div></div>
+    <div class="col-6"><div class="card"><div class="card-body p-2 text-center"><div class="small text-secondary">Pendler ({{ km|number_format(0, ',', '.') }} km × {{ kmRate|number_format(2, ',', '.') }} €)</div><div class="h2 mb-0">{{ km > 0 ? total.km|number_format(2, ',', '.') ~ ' €' : '–' }}</div></div></div></div>
+</div>
+<div class="card mb-3">
+    <table class="table table-sm table-vcenter card-table mb-0">
+        <thead><tr><th>Monat</th><th class="text-end">Tage</th><th class="text-end">&gt; 8 h</th><th class="text-end">Verpfl.</th></tr></thead>
+        <tbody>
+            {% set mn = ['', 'Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'] %}
+            {% for m, r in months %}
+                <tr><td>{{ mn[m] }}</td><td class="text-end">{{ r.days }}</td><td class="text-end">{{ r.meal_days }}</td><td class="text-end">{{ (r.meal_days * mealRate)|number_format(2, ',', '.') }} €</td></tr>
+            {% else %}
+                <tr><td colspan="4" class="text-secondary">Keine Einträge in {{ year }}.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="form-hint">
+    Hilfsliste, kein Steuerbescheid. Gezählt wird pro Tag vom ersten Beginn bis zum letzten Ende{% if travel > 0 %} plus {{ (travel / 60)|round }} min Weg{% endif %}; Verpflegung gibt es nur bei Auswärtstätigkeit (nicht im Betrieb).
+    Die Pendlerpauschale zählt nur für Fahrten zur ersten Tätigkeitsstätte. Was davon der Arbeitgeber schon steuerfrei zahlt, wird abgezogen. Sätze und Entfernung stellst du in den Plugin-Einstellungen ein. Im Zweifel Steuerberater fragen.
+</div>
+{% endblock %}

@@ -12,6 +12,20 @@
     {% endif %}
     <a class="btn btn-primary ms-auto" href="{{ path('wtl_site_orders_pdf', all ? {all: 1} : {}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF</a>
 </div>
+{% if stockLow|length > 0 %}
+    <div class="card mb-3 border-danger">
+        <a class="card-header py-2 text-reset" href="{{ path('wtl_stock') }}"><strong><i class="fas fa-boxes me-2"></i>Bus-Lager auffüllen</strong><span class="ms-auto badge bg-red text-white">{{ stockLow|length }}</span></a>
+        <div class="list-group list-group-flush">
+            {% for it in stockLow %}
+                <div class="list-group-item py-2 d-flex align-items-center gap-2">
+                    <span class="flex-fill">{{ it.text }}</span>
+                    <form method="post" action="{{ path('wtl_stock') }}"><input type="hidden" name="_token" value="{{ csrf_token('wtl_stock') }}"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="{{ it.id }}"><input type="hidden" name="back" value="{{ path('wtl_site_orders') }}">
+                        <button class="btn btn-sm btn-success">aufgefüllt</button></form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
 {% for supplier, items in groups %}
     <div class="card mb-3">
         <div class="card-header py-2"><strong><i class="fas fa-store me-2"></i>{{ supplier }}</strong><span class="ms-auto text-secondary">{{ items|length }}</span></div>
@@ -39,7 +53,7 @@
         </div>
     </div>
 {% else %}
-    <div class="text-secondary text-center py-4">Kein offenes Material. 👍</div>
+    {% if stockLow|length == 0 %}<div class="text-secondary text-center py-4">Kein offenes Material. 👍</div>{% endif %}
 {% endfor %}
 <div class="form-hint">Antippen des Status schaltet weiter: offen → bestellt → geliefert.</div>
 {% endblock %}

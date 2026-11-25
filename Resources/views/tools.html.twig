@@ -1,0 +1,50 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Werkzeug{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_tools') %}
+<form method="post" class="d-flex gap-2 mb-3">
+    <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="add">
+    <input type="text" name="name" class="form-control" placeholder="Neues Werkzeug (z. B. Bohrhammer Hilti)" data-wtl-dictate>
+    <button class="btn btn-primary"><i class="fas fa-plus"></i></button>
+</form>
+<div class="card">
+    <div class="list-group list-group-flush">
+        {% for t in tools %}
+            <details class="list-group-item py-2">
+                <summary class="d-flex align-items-center gap-2" style="list-style:none;cursor:pointer">
+                    <i class="fas fa-tools text-secondary"></i>
+                    <div class="flex-fill">
+                        <div class="fw-bold">{{ t.name }}</div>
+                        <div class="small {{ t.project_id ? 'text-orange' : 'text-secondary' }}">{{ t.project_id ? '📍 ' : '' }}{{ t.location ?: 'unbekannt' }} · {{ t.updated_at|date('d.m.', false) }}</div>
+                    </div>
+                    <span class="btn btn-sm">Wo?</span>
+                </summary>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% for pid, p in recent %}
+                        <form method="post"><input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="move"><input type="hidden" name="id" value="{{ t.id }}"><input type="hidden" name="where" value="p:{{ pid }}">
+                            <button class="btn btn-sm btn-outline-orange">📍 {{ p.name|u.truncate(22, '…') }}</button></form>
+                    {% endfor %}
+                    {% for pl in places %}
+                        <form method="post"><input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="move"><input type="hidden" name="id" value="{{ t.id }}"><input type="hidden" name="where" value="{{ pl }}">
+                            <button class="btn btn-sm {{ t.location == pl ? 'btn-primary' : '' }}">{{ pl }}</button></form>
+                    {% endfor %}
+                </div>
+                <form method="post" class="d-flex gap-2 mt-2">
+                    <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="move"><input type="hidden" name="id" value="{{ t.id }}">
+                    <select name="where" class="form-select form-select-sm">
+                        <option value="">Andere Baustelle …</option>
+                        {% for pid, p in projects %}<option value="p:{{ pid }}">{{ p.name }}</option>{% endfor %}
+                    </select>
+                    <button class="btn btn-sm">OK</button>
+                </form>
+                <form method="post" class="text-end mt-1" onsubmit="return confirm('Werkzeug löschen?')">
+                    <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ t.id }}">
+                    <button class="btn btn-sm btn-ghost-danger"><i class="fas fa-trash"></i></button>
+                </form>
+            </details>
+        {% else %}
+            <div class="list-group-item text-secondary">Noch kein Werkzeug eingetragen.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -42,7 +42,16 @@ final class MenuSubscriber implements EventSubscriberInterface
             $site->addChild(new MenuItemModel('wtl_site_todos', 'Noch zu machen', 'wtl_site_todos', [], 'fas fa-tasks'));
         }
         $site->addChild(new MenuItemModel('wtl_site_orders', 'Bestellliste', 'wtl_site_orders', [], 'fas fa-truck'));
-        $site->setChildRoutes(['wtl_today', 'wtl_site_todos', 'wtl_site_photos', 'wtl_site', 'wtl_site_orders', 'wtl_site_project', 'wtl_site_sheet', 'wtl_site_sheet_new']);
+        if ($this->settings->bool('site_stock', true)) {
+            $site->addChild(new MenuItemModel('wtl_stock', 'Bus-Lager', 'wtl_stock', [], 'fas fa-boxes'));
+        }
+        if ($this->settings->bool('site_tools', true)) {
+            $site->addChild(new MenuItemModel('wtl_tools', 'Werkzeug', 'wtl_tools', [], 'fas fa-tools'));
+        }
+        if ($this->settings->bool('site_tax', true)) {
+            $site->addChild(new MenuItemModel('wtl_tax', 'Steuer-Hilfe', 'wtl_tax', [], 'fas fa-receipt'));
+        }
+        $site->setChildRoutes(['wtl_today', 'wtl_today_feierabend', 'wtl_tools', 'wtl_stock', 'wtl_tax', 'wtl_site_circuits', 'wtl_site_todos', 'wtl_site_photos', 'wtl_site', 'wtl_site_orders', 'wtl_site_project', 'wtl_site_sheet', 'wtl_site_sheet_new']);
         $root->addChild($site);
         $children = [];
         $inserted = false;

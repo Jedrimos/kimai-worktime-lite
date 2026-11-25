@@ -1,0 +1,34 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Feierabend{% endblock %}
+{% block main %}
+<form method="post" class="card mb-3">
+    <div class="card-body">
+        <input type="hidden" name="_token" value="{{ csrf_token('wtl_today') }}">
+        <div class="text-secondary small mb-1">{{ project ? project.name }} · seit {{ ts.begin|date('H:i', false) }}</div>
+        <div class="row g-2 mb-3">
+            <div class="col-6"><label class="form-label">Ende</label><input type="time" name="end" class="form-control form-control-lg" value="{{ end }}"></div>
+            {% if breakActive %}<div class="col-6"><label class="form-label">Pause (min)</label><input type="number" name="break" class="form-control form-control-lg" min="0" step="5" value="{{ (ts.break / 60)|round }}"></div>{% endif %}
+        </div>
+
+        {% if todos|length > 0 %}
+            <label class="form-label fw-bold">Heute erledigt?</label>
+            {% for t in todos %}
+                <label class="form-check mb-2"><input class="form-check-input" type="checkbox" name="done[]" value="{{ t.id }}"><span class="form-check-label">{{ t.text }}</span></label>
+            {% endfor %}
+        {% endif %}
+        {% if project %}
+            <label class="form-label fw-bold mt-2">Was ist noch offen? <span class="text-secondary fw-normal">(eine Zeile pro Punkt)</span></label>
+            <textarea name="todos" class="form-control mb-3" rows="2" data-wtl-dictate></textarea>
+        {% endif %}
+        {% if usePack %}
+            <label class="form-label fw-bold">Morgen mitnehmen</label>
+            <textarea name="pack" class="form-control mb-3" rows="2" placeholder="z. B. Leiter, 2x FI" data-wtl-dictate></textarea>
+        {% endif %}
+        {% if project %}
+            <label class="form-check mb-3"><input class="form-check-input" type="checkbox" name="material" value="1"><span class="form-check-label">Material verbraucht – danach Materialbestellung öffnen</span></label>
+        {% endif %}
+        <button class="btn btn-danger btn-lg w-100"><i class="fas fa-flag-checkered me-2"></i>Stoppen & Feierabend</button>
+    </div>
+</form>
+<a class="btn w-100" href="{{ path('wtl_today') }}">Abbrechen</a>
+{% endblock %}
