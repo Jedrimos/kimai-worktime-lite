@@ -16,6 +16,7 @@ final class MonteurRepository
     public const CIRCUITS = 'kimai2_wtl_circuits';
     public const TOOLS = 'kimai2_wtl_tools';
     public const STOCK = 'kimai2_wtl_stock';
+    public const COMPANIONS = 'kimai2_wtl_companions';
 
     public const STATUS = ['geplant' => 'Geplant', 'laeuft' => 'Läuft', 'fertig' => 'Fertig', 'abgerechnet' => 'Abgerechnet'];
 
@@ -43,7 +44,32 @@ final class MonteurRepository
         $c->executeStatement('CREATE TABLE IF NOT EXISTS ' . self::CIRCUITS . ' (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, project_id INT NOT NULL, board VARCHAR(100) DEFAULT NULL, pos VARCHAR(30) DEFAULT NULL, device VARCHAR(100) DEFAULT NULL, description VARCHAR(300) DEFAULT NULL, cable VARCHAR(100) DEFAULT NULL, sort INT NOT NULL DEFAULT 0, INDEX wtl_circ_user_project (user_id, project_id), PRIMARY KEY(id))' . $opts);
         $c->executeStatement('CREATE TABLE IF NOT EXISTS ' . self::TOOLS . ' (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, name VARCHAR(150) NOT NULL, location VARCHAR(150) DEFAULT NULL, project_id INT DEFAULT NULL, updated_at DATETIME NOT NULL, INDEX wtl_tools_user (user_id), PRIMARY KEY(id))' . $opts);
         $c->executeStatement('CREATE TABLE IF NOT EXISTS ' . self::STOCK . ' (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, text VARCHAR(200) NOT NULL, unit VARCHAR(20) DEFAULT NULL, low TINYINT(1) NOT NULL DEFAULT 0, updated_at DATETIME NOT NULL, INDEX wtl_stock_user (user_id), PRIMARY KEY(id))' . $opts);
+        $c->executeStatement('CREATE TABLE IF NOT EXISTS ' . self::COMPANIONS . ' (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, name VARCHAR(60) NOT NULL, UNIQUE INDEX wtl_comp_user_name (user_id, name), PRIMARY KEY(id))' . $opts);
         $this->ready = true;
+    }
+
+    // ---------- Mit wem ----------
+
+    /**
+     * @return array<int, string>
+     */
+    public function companions(int $userId): array
+    {
+        $this->ensure();
+
+        return array_map('strval', $this->connection->fetchFirstColumn('SELECT name FROM ' . self::COMPANIONS . ' WHERE user_id = ? ORDER BY name', [$userId]));
+    }
+
+    public function addCompanion(int $userId, string $name): void
+    {
+        $this->ensure();
+        $this->connection->executeStatement('INSERT IGNORE INTO ' . self::COMPANIONS . ' (user_id, name) VALUES (?, ?)', [$userId, $name]);
+    }
+
+    public function deleteCompanion(int $userId, string $name): void
+    {
+        $this->ensure();
+        $this->connection->delete(self::COMPANIONS, ['user_id' => $userId, 'name' => $name]);
     }
 
     // ---------- Baustellen-Status / Zugang ----------

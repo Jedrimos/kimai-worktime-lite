@@ -86,6 +86,7 @@ final class Configuration implements ConfigurationInterface
                 ->booleanNode('site_todos')->defaultTrue()->end()
                 ->booleanNode('site_photos')->defaultTrue()->end()
                 ->scalarNode('companions')->defaultValue('')->end()
+                ->booleanNode('site_companions')->defaultTrue()->end()
                 ->scalarNode('custom_fields')->defaultValue('')->end()
                 ->scalarNode('zoll_employer')->defaultValue('')->end()
             ->end()

@@ -51,7 +51,7 @@ final class MenuSubscriber implements EventSubscriberInterface
         if ($this->settings->bool('site_report', true)) {
             $site->addChild(new MenuItemModel('wtl_report', 'Baustellenberichte', 'wtl_report', [], 'fas fa-file-signature'));
         }
-        if ($this->settings->string('companions') !== '') {
+        if ($this->settings->bool('site_companions', true)) {
             $site->addChild(new MenuItemModel('wtl_people', 'Mit wem', 'wtl_people', [], 'fas fa-user-friends'));
         }
         if ($this->settings->bool('site_tax', true)) {

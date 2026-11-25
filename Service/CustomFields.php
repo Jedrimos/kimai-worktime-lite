@@ -22,7 +22,11 @@ final class CustomFields
 {
     public const PREFIX = 'wtl_';
 
-    public function __construct(private readonly Settings $settings)
+    public function __construct(
+        private readonly Settings $settings,
+        private readonly \Symfony\Bundle\SecurityBundle\Security $security,
+        private readonly MonteurRepository $monteur,
+    )
     {
     }
 
@@ -75,7 +79,7 @@ final class CustomFields
         }
 
         $names = $this->getCompanions();
-        if ($names !== []) {
+        if ($this->settings->bool('site_companions', true)) {
             $result[] = ['name' => self::COMPANIONS, 'label' => 'Mit wem', 'type' => 'companions', 'choices' => $names, 'required' => false];
         }
 
@@ -99,7 +103,16 @@ final class CustomFields
             }
         }
 
-        return array_values(array_unique($out));
+        $user = $this->security->getUser();
+        if ($user instanceof \App\Entity\User && $user->getId() !== null) {
+            foreach ($this->monteur->companions($user->getId()) as $n) {
+                $out[] = $n;
+            }
+        }
+        $out = array_values(array_unique($out));
+        sort($out, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $out;
     }
 
     /**

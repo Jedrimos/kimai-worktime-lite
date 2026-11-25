@@ -7,6 +7,8 @@ use App\Entity\User;
 use App\Pdf\HtmlToPdfConverter;
 use App\Repository\TimesheetRepository;
 use KimaiPlugin\WorkTimeLiteBundle\Service\CustomFields;
+use KimaiPlugin\WorkTimeLiteBundle\Service\MonteurRepository;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +26,7 @@ final class PeopleController extends AbstractController
         private readonly TimesheetRepository $timesheetRepository,
         private readonly CustomFields $customFields,
         private readonly HtmlToPdfConverter $pdfConverter,
+        private readonly MonteurRepository $monteur,
     )
     {
     }
@@ -77,6 +80,30 @@ final class PeopleController extends AbstractController
         return [$from, $to, $period];
     }
 
+    #[Route(path: '/add', name: 'wtl_people_add', methods: ['POST'])]
+    public function add(Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+        $name = mb_substr(trim(str_replace(',', ' ', (string) $request->request->get('name'))), 0, 60);
+        if ($name === '' || !$this->isCsrfTokenValid('wtl_people', (string) $request->request->get('_token'))) {
+            return new JsonResponse(['ok' => false], 400);
+        }
+        $this->monteur->addCompanion($user->getId(), $name);
+
+        return new JsonResponse(['ok' => true, 'name' => $name]);
+    }
+
+    #[Route(path: '/remove', name: 'wtl_people_remove', methods: ['POST'])]
+    public function remove(Request $request): Response
+    {
+        $user = $this->getUser();
+        if ($this->isCsrfTokenValid('wtl_people', (string) $request->request->get('_token'))) {
+            $this->monteur->deleteCompanion($user->getId(), trim((string) $request->request->get('name')));
+        }
+
+        return $this->redirectToRoute('wtl_people');
+    }
+
     #[Route(path: '', name: 'wtl_people', methods: ['GET'])]
     public function index(Request $request): Response
     {
@@ -95,6 +122,7 @@ final class PeopleController extends AbstractController
         }
 
         return $this->render('@WorkTimeLite/people/index.html.twig', [
+            'own' => $this->monteur->companions($user->getId()),
             'counts' => $counts,
             'from' => $from, 'to' => $to, 'period' => $period,
         ]);

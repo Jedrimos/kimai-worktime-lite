@@ -10,7 +10,23 @@
             <div class="text-end small text-secondary">{{ c.days|length }} Tage<br>{{ c.seconds|duration }} h</div>
         </a>
     {% else %}
-        <div class="list-group-item text-secondary">Noch keine Namen. Trag Kollegen und Azubis in den Plugin-Einstellungen bei „Mit wem“ ein – dann kannst du sie beim Zeiteintrag antippen.</div>
+        <div class="list-group-item text-secondary">Noch keine Namen. Beim Zeiteintrag im Feld „Mit wem“ einfach einen Namen tippen und anlegen.</div>
     {% endfor %}
 </div>
+{% if own|length > 0 %}
+<details class="card mb-3">
+    <summary class="card-body py-2" style="cursor:pointer"><strong>Namen verwalten</strong> <span class="badge ms-1">{{ own|length }}</span></summary>
+    <div class="list-group list-group-flush">
+        {% for n in own %}
+            <div class="list-group-item py-2 d-flex align-items-center">
+                <span class="flex-fill">{{ n }}</span>
+                <form method="post" action="{{ path('wtl_people_remove') }}" onsubmit="return confirm('Name aus der Auswahl entfernen? Bisherige Einträge bleiben.')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('wtl_people') }}"><input type="hidden" name="name" value="{{ n }}">
+                    <button class="btn btn-sm btn-ghost-danger p-1"><i class="fas fa-times"></i></button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+</details>
+{% endif %}
 {% endblock %}

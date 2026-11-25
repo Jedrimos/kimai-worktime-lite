@@ -696,7 +696,7 @@
       </trans-unit>
       <trans-unit id="wtl173" resname="wtl.cfg.companions">
         <source>wtl.cfg.companions</source>
-        <target>„Mit wem“: Kollegen und Azubis (ein Name pro Zeile, leer = aus)</target>
+        <target>„Mit wem“: feste Namen für alle Benutzer (optional, ein Name pro Zeile – eigene Namen legt jeder direkt im Dropdown an)</target>
       </trans-unit>
       <trans-unit id="wtl174" resname="wtl.cfg.today_stamp">
         <source>wtl.cfg.today_stamp</source>
@@ -705,6 +705,10 @@
       <trans-unit id="wtl175" resname="wtl.cfg.site_report">
         <source>wtl.cfg.site_report</source>
         <target>Baustellenbericht (Tagesbericht als PDF)</target>
+      </trans-unit>
+      <trans-unit id="wtl176" resname="wtl.cfg.site_companions">
+        <source>wtl.cfg.site_companions</source>
+        <target>„Mit wem“ beim Zeiteintrag (Kollegen/Azubis)</target>
       </trans-unit>
     </body>
   </file>
