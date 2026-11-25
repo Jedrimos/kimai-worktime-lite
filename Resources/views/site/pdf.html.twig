@@ -42,7 +42,7 @@ td.c { width: 8mm; }
                     {% for ph in row %}
                         <td style="width:50%; border:none; text-align:center; padding:2mm">
                             <img src="{{ ph.path }}" style="width:82mm; max-height:62mm">
-                            <div style="font-size:8pt; color:#555">{{ ph.created_at|date('d.m.Y H:i', false) }}{% if ph.comment %} – {{ ph.comment }}{% endif %}</div>
+                            <div style="font-size:8pt; color:#555">{% if ph.kind|default('foto') == 'zaehler' %}<b>Zähler</b> {% elseif ph.kind|default('foto') == 'typenschild' %}<b>Typenschild</b> {% endif %}{% if ph.meter_no|default(null) %}{{ ph.meter_no }} {% endif %}{% if ph.reading|default(null) %}· {{ ph.reading }} {% endif %}<br>{{ ph.created_at|date('d.m.Y H:i', false) }}{% if ph.comment %} – {{ ph.comment }}{% endif %}</div>
                         </td>
                     {% endfor %}
                 </tr>

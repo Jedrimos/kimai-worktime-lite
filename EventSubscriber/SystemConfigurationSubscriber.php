@@ -80,6 +80,25 @@ final class SystemConfigurationSubscriber implements EventSubscriberInterface
         $config[] = $this->cfg('site_today')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_todos')->setType(CheckboxType::class);
         $config[] = $this->cfg('site_photos')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_favorites')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_templates')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_status')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_access')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_circuits')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_meters')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_feierabend')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_packlist')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_ampel')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_tools')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_stock')->setType(CheckboxType::class);
+        $config[] = $this->cfg('site_tax')->setType(CheckboxType::class);
+        $config[] = $this->cfg('dictate')->setType(CheckboxType::class);
+        $config[] = $this->cfg('ampel_yellow')->setType(TextType::class);
+        $config[] = $this->cfg('ampel_red')->setType(TextType::class);
+        $config[] = $this->cfg('tax_meal_rate')->setType(TextType::class);
+        $config[] = $this->cfg('tax_km_rate')->setType(TextType::class);
+        $config[] = $this->cfg('tax_km')->setType(TextType::class);
+        $config[] = $this->cfg('tax_travel_minutes')->setType(TextType::class);
         $config[] = $this->cfg('custom_fields')->setType(TextareaType::class)->setOptions([
             'attr' => ['rows' => 6, 'placeholder' => "Regie | ja/nein\nBaustelle | text\nFahrzeug | auswahl: Crafter, Caddy\nTätigkeitsbericht | langtext"],
             'help' => 'wtl.cfg.custom_fields.help',

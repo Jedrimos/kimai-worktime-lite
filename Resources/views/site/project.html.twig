@@ -16,9 +16,27 @@
 </ul>
 {% if overview %}
 {% set o = overview %}
+{% set token = csrf_token('wtl_site') %}
+{% set back = path('wtl_site_project', {id: project.id}) %}
 <div class="card mb-3" style="border-top-left-radius:0;border-top-right-radius:0">
     <div class="card-body">
-        <div class="h2 mb-1">{{ project.name }}</div>
+        <div class="d-flex justify-content-between align-items-start gap-2">
+            <div class="h2 mb-1">{{ project.name }}</div>
+            {% if o.useStatus %}
+                {% set sc = {geplant: 'bg-secondary', laeuft: 'bg-green', fertig: 'bg-blue', abgerechnet: 'bg-dark'} %}
+                <div class="dropdown">
+                    <button class="btn btn-sm dropdown-toggle {{ o.meta.status ? sc[o.meta.status] ~ ' text-white' }}" data-bs-toggle="dropdown" type="button">{{ o.meta.status ? o.statusLabels[o.meta.status] : 'Status' }}</button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        {% for k, l in o.statusLabels %}
+                            <form method="post" action="{{ path('wtl_site_meta', {id: project.id}) }}">
+                                <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="back" value="{{ back }}"><input type="hidden" name="status" value="{{ k }}">
+                                <button class="dropdown-item {{ o.meta.status == k ? 'active' }}">{{ l }}</button>
+                            </form>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
         {% if o.customer and o.customer.name != project.name %}<div class="fw-bold">{{ o.customer.name }}{% if o.customer.company and o.customer.company != o.customer.name %} · {{ o.customer.company }}{% endif %}</div>{% endif %}
         {% if o.address %}<div class="text-secondary" style="white-space: pre-line">{{ o.address }}</div>{% endif %}
         {% if o.customer and o.customer.contact %}<div class="mt-2"><i class="fas fa-user me-1 text-secondary"></i>{{ o.customer.contact }}</div>{% endif %}
@@ -49,13 +67,27 @@
 </div>
 {% if o.stats.first %}<div class="text-secondary small mb-2">Erster Tag {{ o.stats.first|date('d.m.Y', false) }} · zuletzt {{ o.stats.last|date('d.m.Y', false) }}</div>{% endif %}
 
-<div class="d-flex gap-2 mb-3">
+<div class="d-flex gap-2 mb-3 flex-wrap">
     {% for k, label in kinds %}
         <a class="btn flex-fill" href="{{ path('wtl_site_sheet_new', {id: project.id, kind: k}) }}"><i class="fas fa-plus me-1"></i>{{ label }}</a>
     {% endfor %}
+    {% if o.useCircuits %}<a class="btn flex-fill" href="{{ path('wtl_site_circuits', {id: project.id}) }}"><i class="fas fa-th me-1"></i>Stromkreise{% if o.circuitCount > 0 %} <span class="badge ms-1">{{ o.circuitCount }}</span>{% endif %}</a>{% endif %}
 </div>
 
-{% set token = csrf_token('wtl_site') %}
+{% if o.useAccess %}
+<details class="card mb-3" {{ o.meta.access_info ? '' : '' }}>
+    <summary class="card-body py-2 d-flex align-items-center gap-2" style="list-style:none;cursor:pointer">
+        <i class="fas fa-key text-warning"></i>
+        {% if o.meta.access_info %}<span class="flex-fill" style="white-space:pre-line">{{ o.meta.access_info }}</span>{% else %}<span class="flex-fill text-secondary">Zugang / Schlüssel / Code eintragen</span>{% endif %}
+        <i class="fas fa-pen small text-secondary"></i>
+    </summary>
+    <form method="post" action="{{ path('wtl_site_meta', {id: project.id}) }}" class="card-body pt-0">
+        <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="back" value="{{ back }}">
+        <textarea name="access_info" class="form-control mb-2" rows="2" placeholder="z. B. Schlüsselbox Code 1234, bei Nachbar klingeln, Hund!" data-wtl-dictate>{{ o.meta.access_info }}</textarea>
+        <button class="btn btn-primary btn-sm w-100">Speichern</button>
+    </form>
+</details>
+{% endif %}
 {% if o.todos is not null %}
     {% include '@WorkTimeLite/site/_todo_card.html.twig' with {project: project, todos: o.todos, back: path('wtl_site_project', {id: project.id}), token: token} only %}
 {% endif %}

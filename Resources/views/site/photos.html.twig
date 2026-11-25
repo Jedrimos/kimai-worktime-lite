@@ -12,7 +12,18 @@
             <i class="fas fa-camera me-2"></i>Foto aufnehmen / auswählen
             <input type="file" name="photos[]" accept="image/*" multiple class="d-none" id="wtl-photo-input">
         </label>
-        <input type="text" name="comment" class="form-control" placeholder="Kommentar (optional, z. B. Verteiler EG vor dem Zumachen)">
+        {% if useMeters %}
+        <div class="btn-group w-100 mb-2" role="group">
+            <input type="radio" class="btn-check" name="kind" id="k1" value="foto" checked><label class="btn" for="k1"><i class="fas fa-image me-1"></i>Foto</label>
+            <input type="radio" class="btn-check" name="kind" id="k2" value="zaehler"><label class="btn" for="k2"><i class="fas fa-tachometer-alt me-1"></i>Zähler</label>
+            <input type="radio" class="btn-check" name="kind" id="k3" value="typenschild"><label class="btn" for="k3"><i class="fas fa-tag me-1"></i>Typenschild</label>
+        </div>
+        <div class="row g-2 mb-2 d-none" id="wtl-meter-fields">
+            <div class="col-6"><input type="text" name="meter_no" class="form-control" placeholder="Zählernr. / Gerät"></div>
+            <div class="col-6"><input type="text" name="reading" class="form-control" inputmode="decimal" placeholder="Stand / Seriennr."></div>
+        </div>
+        {% endif %}
+        <input type="text" name="comment" class="form-control" placeholder="Kommentar (optional, z. B. Verteiler EG vor dem Zumachen)" data-wtl-dictate>
         <div class="form-hint mt-1" id="wtl-photo-status">Bilder werden vor dem Hochladen verkleinert.</div>
     </div>
 </form>
@@ -22,7 +33,10 @@
             <div class="card">
                 <a href="{{ path('wtl_site_photo', {pid: photo.id}) }}" target="_blank"><img src="{{ path('wtl_site_photo', {pid: photo.id}) }}" loading="lazy" class="card-img-top" style="aspect-ratio:4/3;object-fit:cover"></a>
                 <div class="card-body p-2">
-                    <div class="small text-secondary">{{ photo.created_at|date('d.m.Y H:i', false) }}</div>
+                    <div class="small text-secondary">{{ photo.created_at|date('d.m.Y H:i', false) }}
+                        {% if photo.kind|default('foto') == 'zaehler' %}<span class="badge bg-blue-lt">Zähler</span>{% elseif photo.kind|default('foto') == 'typenschild' %}<span class="badge bg-purple-lt">Typenschild</span>{% endif %}
+                    </div>
+                    {% if photo.meter_no|default(null) or photo.reading|default(null) %}<div class="small fw-bold">{{ photo.meter_no }}{% if photo.meter_no and photo.reading %} · {% endif %}{{ photo.reading }}</div>{% endif %}
                     <form method="post" action="{{ path('wtl_site_photo_action', {pid: photo.id, action: 'comment'}) }}">
                         <input type="hidden" name="_token" value="{{ token }}">
                         <input type="text" name="comment" class="form-control form-control-sm mt-1" value="{{ photo.comment }}" placeholder="Kommentar" onchange="this.form.submit()">
@@ -55,6 +69,12 @@
             img.src = url;
         });
     }
+    document.querySelectorAll('input[name=kind]').forEach(function (r) {
+        r.addEventListener('change', function () {
+            var f = document.getElementById('wtl-meter-fields');
+            if (f) { f.classList.toggle('d-none', r.value === 'foto' && r.checked); if (r.value !== 'foto' && r.checked) { f.classList.remove('d-none'); } }
+        });
+    });
     input.addEventListener('change', function () {
         var files = Array.prototype.slice.call(input.files);
         if (!files.length) { return; }

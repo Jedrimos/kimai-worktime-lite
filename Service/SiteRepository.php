@@ -78,6 +78,9 @@ final class SiteRepository
             INDEX wtl_photo_user_project (user_id, project_id),
             PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
+        if (\count($this->connection->fetchFirstColumn('SHOW COLUMNS FROM ' . self::PHOTOS . " LIKE 'kind'")) === 0) {
+            $this->connection->executeStatement('ALTER TABLE ' . self::PHOTOS . " ADD kind VARCHAR(20) NOT NULL DEFAULT 'foto', ADD meter_no VARCHAR(60) DEFAULT NULL, ADD reading VARCHAR(60) DEFAULT NULL");
+        }
         $cols = $this->connection->fetchFirstColumn('SHOW COLUMNS FROM ' . self::TABLE . " LIKE 'sheet_id'");
         if (\count($cols) === 0) {
             $this->connection->executeStatement('ALTER TABLE ' . self::TABLE . ' ADD sheet_id INT DEFAULT NULL, ADD INDEX wtl_site_sheet (sheet_id)');
@@ -336,10 +339,10 @@ final class SiteRepository
 
     // ---------- Fotos ----------
 
-    public function addPhoto(int $userId, int $projectId, string $filename, ?string $comment): int
+    public function addPhoto(int $userId, int $projectId, string $filename, ?string $comment, string $kind = 'foto', ?string $meterNo = null, ?string $reading = null): int
     {
         $this->ensureTable();
-        $this->connection->insert(self::PHOTOS, ['user_id' => $userId, 'project_id' => $projectId, 'filename' => $filename, 'comment' => $comment, 'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s')]);
+        $this->connection->insert(self::PHOTOS, ['user_id' => $userId, 'project_id' => $projectId, 'filename' => $filename, 'comment' => $comment, 'kind' => $kind, 'meter_no' => $meterNo, 'reading' => $reading, 'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s')]);
 
         return (int) $this->connection->lastInsertId();
     }
@@ -375,5 +378,23 @@ final class SiteRepository
         $this->ensureTable();
 
         return $this->connection->fetchAllAssociative('SELECT * FROM ' . self::PHOTOS . ' WHERE user_id = ? AND project_id = ? ORDER BY created_at DESC, id DESC', [$userId, $projectId]);
+    }
+
+    /**
+     * Häufigste Artikel (Text + zuletzt benutzte Einheit).
+     *
+     * @return array<int, array{text: string, unit: ?string, n: int}>
+     */
+    public function favorites(int $userId, string $kind, int $limit = 16): array
+    {
+        $this->ensureTable();
+        $rows = $this->connection->fetchAllAssociative('SELECT text, COUNT(*) n, MAX(id) last_id FROM ' . self::TABLE . ' WHERE user_id = ? AND kind = ? GROUP BY text HAVING n >= 1 ORDER BY n DESC, last_id DESC LIMIT ' . (int) $limit, [$userId, $kind]);
+        $out = [];
+        foreach ($rows as $r) {
+            $unit = $this->connection->fetchOne('SELECT unit FROM ' . self::TABLE . ' WHERE id = ?', [$r['last_id']]);
+            $out[] = ['text' => (string) $r['text'], 'unit' => $unit !== false ? $unit : null, 'n' => (int) $r['n']];
+        }
+
+        return $out;
     }
 }

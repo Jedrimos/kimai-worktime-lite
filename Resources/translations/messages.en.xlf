@@ -614,6 +614,82 @@
         <source>wtl.cfg.mobile_nav</source>
         <target>Handy: Leiste unten (Heute, Baustellen, + Zeit, Zeiten, Mehr)</target>
       </trans-unit>
+      <trans-unit id="wtl153" resname="wtl.cfg.site_favorites">
+        <source>wtl.cfg.site_favorites</source>
+        <target>Zettel: häufigste Artikel als Schnellwahl</target>
+      </trans-unit>
+      <trans-unit id="wtl154" resname="wtl.cfg.site_templates">
+        <source>wtl.cfg.site_templates</source>
+        <target>Zettel: Vorlagen (z. B. „Steckdose komplett“)</target>
+      </trans-unit>
+      <trans-unit id="wtl155" resname="wtl.cfg.site_status">
+        <source>wtl.cfg.site_status</source>
+        <target>Baustelle: Status (geplant/läuft/fertig/abgerechnet)</target>
+      </trans-unit>
+      <trans-unit id="wtl156" resname="wtl.cfg.site_access">
+        <source>wtl.cfg.site_access</source>
+        <target>Baustelle: Zugang/Schlüssel-Info</target>
+      </trans-unit>
+      <trans-unit id="wtl157" resname="wtl.cfg.site_circuits">
+        <source>wtl.cfg.site_circuits</source>
+        <target>Baustelle: Stromkreisliste</target>
+      </trans-unit>
+      <trans-unit id="wtl158" resname="wtl.cfg.site_meters">
+        <source>wtl.cfg.site_meters</source>
+        <target>Fotos: Zählerstand und Typenschild</target>
+      </trans-unit>
+      <trans-unit id="wtl159" resname="wtl.cfg.site_feierabend">
+        <source>wtl.cfg.site_feierabend</source>
+        <target>Heute: Feierabend-Check</target>
+      </trans-unit>
+      <trans-unit id="wtl160" resname="wtl.cfg.site_packlist">
+        <source>wtl.cfg.site_packlist</source>
+        <target>Heute: Mitnehmen-Liste</target>
+      </trans-unit>
+      <trans-unit id="wtl161" resname="wtl.cfg.site_ampel">
+        <source>wtl.cfg.site_ampel</source>
+        <target>Heute: Überstunden-Ampel</target>
+      </trans-unit>
+      <trans-unit id="wtl162" resname="wtl.cfg.site_tools">
+        <source>wtl.cfg.site_tools</source>
+        <target>Werkzeug-Tracker</target>
+      </trans-unit>
+      <trans-unit id="wtl163" resname="wtl.cfg.site_stock">
+        <source>wtl.cfg.site_stock</source>
+        <target>Bus-Lager (knapp → Bestellliste)</target>
+      </trans-unit>
+      <trans-unit id="wtl164" resname="wtl.cfg.site_tax">
+        <source>wtl.cfg.site_tax</source>
+        <target>Steuer-Hilfe (Verpflegung, Arbeitstage)</target>
+      </trans-unit>
+      <trans-unit id="wtl165" resname="wtl.cfg.dictate">
+        <source>wtl.cfg.dictate</source>
+        <target>Diktier-Knopf (Mikrofon) bei Textfeldern</target>
+      </trans-unit>
+      <trans-unit id="wtl166" resname="wtl.cfg.ampel_yellow">
+        <source>wtl.cfg.ampel_yellow</source>
+        <target>Ampel gelb ab Überstunden (h)</target>
+      </trans-unit>
+      <trans-unit id="wtl167" resname="wtl.cfg.ampel_red">
+        <source>wtl.cfg.ampel_red</source>
+        <target>Ampel rot ab Überstunden (h)</target>
+      </trans-unit>
+      <trans-unit id="wtl168" resname="wtl.cfg.tax_meal_rate">
+        <source>wtl.cfg.tax_meal_rate</source>
+        <target>Verpflegungspauschale pro Tag über 8 h (€)</target>
+      </trans-unit>
+      <trans-unit id="wtl169" resname="wtl.cfg.tax_km_rate">
+        <source>wtl.cfg.tax_km_rate</source>
+        <target>Entfernungspauschale pro km (€)</target>
+      </trans-unit>
+      <trans-unit id="wtl170" resname="wtl.cfg.tax_km">
+        <source>wtl.cfg.tax_km</source>
+        <target>Entfernung Wohnung – Betrieb, einfach (km)</target>
+      </trans-unit>
+      <trans-unit id="wtl171" resname="wtl.cfg.tax_travel_minutes">
+        <source>wtl.cfg.tax_travel_minutes</source>
+        <target>Zusätzliche Abwesenheit pro Tag für Hin- und Rückweg (Minuten)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

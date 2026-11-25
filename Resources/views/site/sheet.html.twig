@@ -23,10 +23,26 @@
     </div>
 {% endmacro %}
 
-{% macro rows(kind, defUnit) %}
+{% macro rows(kind, defUnit, favorites, templates) %}
+    {% if templates %}
+        <div class="d-flex gap-2 mb-2">
+            <select class="form-select" id="wtl-tpl">
+                <option value="">Vorlage einfügen …</option>
+                {% for t in templates %}<option value="{{ loop.index0 }}">{{ t.name }} ({{ t.lines|length }})</option>{% endfor %}
+            </select>
+            <input type="number" min="1" value="1" class="form-control" id="wtl-tpl-n" style="max-width:4.5rem" title="Wie oft">
+            <button type="button" class="btn" id="wtl-tpl-go">×&nbsp;einfügen</button>
+        </div>
+        <script>window.wtlTemplates = {{ templates|json_encode|raw }};</script>
+    {% endif %}
+    {% if favorites|length > 0 %}
+        <div class="mb-2" style="display:flex;gap:.35rem;overflow-x:auto;padding-bottom:.25rem">
+            {% for f in favorites %}<button type="button" class="btn btn-sm btn-outline-primary wtl-fav text-nowrap" data-text="{{ f.text }}" data-unit="{{ f.unit }}">{{ f.text }}</button>{% endfor %}
+        </div>
+    {% endif %}
     {% if kind == 'notiz' %}
         <div id="wtl-rows" data-unit="">
-            <div class="wtl-line mb-1"><textarea name="rows[0][text]" class="form-control" rows="3" placeholder="Notiz"></textarea></div>
+            <div class="wtl-line mb-1"><textarea name="rows[0][text]" class="form-control" rows="3" placeholder="Notiz" data-wtl-dictate></textarea></div>
         </div>
     {% else %}
         <div id="wtl-rows" data-unit="{{ defUnit }}">
@@ -35,7 +51,7 @@
                     <div class="d-flex gap-1">
                         <input type="text" name="rows[{{ i }}][quantity]" class="form-control" style="max-width:5.5rem" inputmode="decimal" placeholder="Menge">
                         <input type="text" name="rows[{{ i }}][unit]" class="form-control" style="max-width:5rem" list="wtl-units" value="{{ defUnit }}">
-                        <input type="text" name="rows[{{ i }}][text]" class="form-control" placeholder="{{ kind == 'aufmass' ? 'z. B. NYM-J 3x1,5 UP' : 'z. B. Schalter Gira E2' }}" list="wtl-suggest">
+                        <input type="text" name="rows[{{ i }}][text]" class="form-control" placeholder="{{ kind == 'aufmass' ? 'z. B. NYM-J 3x1,5 UP' : 'z. B. Schalter Gira E2' }}" list="wtl-suggest" data-wtl-dictate>
                     </div>
                     <input type="text" name="rows[{{ i }}][room]" class="form-control form-control-sm mt-1" placeholder="Raum / Stelle (optional)" list="wtl-rooms">
                 </div>
@@ -52,7 +68,7 @@
             <input type="hidden" name="_token" value="{{ token }}">
             {{ _self.head_fields(kind, null, today, suppliers) }}
             <hr class="my-3">
-            {{ _self.rows(kind, defUnit) }}
+            {{ _self.rows(kind, defUnit, favorites, templates) }}
             <button class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Speichern</button>
         </div>
     </form>
@@ -106,11 +122,18 @@
         <div class="card-header"><strong>Positionen hinzufügen</strong></div>
         <div class="card-body">
             <input type="hidden" name="_token" value="{{ token }}">
-            {{ _self.rows(kind, defUnit) }}
+            {{ _self.rows(kind, defUnit, favorites, templates) }}
             <button class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Hinzufügen</button>
         </div>
     </form>
 
+    {% if templates is not null and kind != 'notiz' and items|length > 0 %}
+    <form method="post" action="{{ path('wtl_site_sheet_template', {sid: sheet.id}) }}" class="d-flex gap-2 mb-2">
+        <input type="hidden" name="_token" value="{{ token }}">
+        <input type="text" name="name" class="form-control form-control-sm" placeholder="Als Vorlage speichern, z. B. Steckdose komplett" required>
+        <button class="btn btn-sm"><i class="fas fa-copy me-1"></i>Vorlage</button>
+    </form>
+    {% endif %}
     <form method="post" action="{{ path('wtl_site_sheet_delete', {sid: sheet.id}) }}" onsubmit="return confirm('Ganzen Zettel mit allen Positionen löschen?')" class="text-end mb-3">
         <input type="hidden" name="_token" value="{{ token }}">
         <button class="btn btn-ghost-danger btn-sm"><i class="fas fa-trash me-1"></i>Zettel löschen</button>
@@ -139,6 +162,37 @@
         return row;
     }
     btn.addEventListener('click', function () { addRow().querySelector('input, textarea').focus(); });
+    function emptyRow() {
+        var lines = box.querySelectorAll('.wtl-line');
+        for (var i = 0; i < lines.length; i++) { var t = lines[i].querySelector('[name$="[text]"]'); if (t && t.value === '') { return lines[i]; } }
+        return addRow();
+    }
+    function fill(row, q, unit, text) {
+        var qi = row.querySelector('[name$="[quantity]"]'), ui = row.querySelector('[name$="[unit]"]'), ti = row.querySelector('[name$="[text]"]');
+        if (qi && q !== null && q !== undefined && q !== '') { qi.value = String(q).replace('.', ','); }
+        if (ui && unit) { ui.value = unit; }
+        ti.value = text;
+        ti.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    document.querySelectorAll('.wtl-fav').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var row = emptyRow();
+            fill(row, '', b.dataset.unit, b.dataset.text);
+            var q = row.querySelector('[name$="[quantity]"]'); if (q) { q.focus(); }
+        });
+    });
+    var go = document.getElementById('wtl-tpl-go');
+    if (go) {
+        go.addEventListener('click', function () {
+            var t = (window.wtlTemplates || [])[document.getElementById('wtl-tpl').value];
+            var n = Math.max(1, parseFloat(document.getElementById('wtl-tpl-n').value) || 1);
+            if (!t) { return; }
+            t.lines.forEach(function (l) {
+                var q = (l.quantity !== null && l.quantity !== undefined) ? Math.round(l.quantity * n * 1000) / 1000 : '';
+                fill(emptyRow(), q, l.unit, l.text);
+            });
+        });
+    }
     box.addEventListener('input', function (e) {
         var lines = box.querySelectorAll('.wtl-line'), last = lines[lines.length - 1];
         if (last.contains(e.target) && e.target.value !== '' && !/\[(unit|room)\]$/.test(e.target.name)) { addRow(); }

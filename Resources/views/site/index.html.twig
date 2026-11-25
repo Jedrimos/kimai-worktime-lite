@@ -12,6 +12,7 @@
         <select id="wtl-project" class="form-select" disabled>
             <option value="">– erst Kunde wählen –</option>
         </select>
+        {% if useStatus %}<label class="form-check mt-2 mb-0"><input type="checkbox" class="form-check-input" id="wtl-show-done"><span class="form-check-label">Auch fertige / abgerechnete zeigen</span></label>{% endif %}
         <div class="form-hint mt-2">Neue Baustelle? Einfach als Projekt anlegen (geht auch direkt beim Zeiteintrag).</div>
     </div>
 </div>
@@ -21,13 +22,19 @@
     var base = {{ path('wtl_site_project', {id: 0})|json_encode|raw }};
     var cs = document.getElementById('wtl-customer'), ps = document.getElementById('wtl-project');
     function open(id) { window.location = base.replace(/\/0$/, '/' + id); }
+    var showDone = document.getElementById('wtl-show-done');
+    var labels = {{ statusLabels|json_encode|raw }};
+    function visible(p) { return !p.status || (showDone && showDone.checked) || (p.status !== 'fertig' && p.status !== 'abgerechnet'); }
+    if (showDone) { showDone.addEventListener('change', function () { cs.dispatchEvent(new Event('change')); }); }
     cs.addEventListener('change', function () {
         var c = data[cs.value];
+        if (c) { c = { name: c.name, projects: c.projects.filter(visible) }; }
         ps.innerHTML = '';
         if (!c) { ps.disabled = true; ps.add(new Option('– erst Kunde wählen –', '')); return; }
-        if (c.projects.length === 1) { open(c.projects[0].id); return; }
+        if (c.projects.length === 1 && cs.dataset.auto !== '0') { open(c.projects[0].id); return; }
         ps.add(new Option('– Projekt auswählen –', ''));
-        c.projects.forEach(function (p) { ps.add(new Option(p.name, p.id)); });
+        if (c.projects.length === 0) { ps.add(new Option('(alle fertig – Haken unten setzen)', '')); ps.disabled = true; return; }
+        c.projects.forEach(function (p) { ps.add(new Option(p.name + (p.status ? ' · ' + labels[p.status] : ''), p.id)); });
         ps.disabled = false;
         ps.focus();
     });
@@ -70,5 +77,21 @@
             </a>
         {% endfor %}
     </div>
+{% endif %}
+{% if templates|length > 0 %}
+    <details class="card mb-3">
+        <summary class="card-body py-2" style="cursor:pointer"><i class="fas fa-copy me-2"></i><strong>Meine Vorlagen</strong> <span class="badge ms-1">{{ templates|length }}</span></summary>
+        <div class="list-group list-group-flush">
+            {% for t in templates %}
+                <div class="list-group-item py-2 d-flex align-items-center gap-2">
+                    <div class="flex-fill"><div class="fw-bold">{{ t.name }}</div><div class="small text-secondary">{{ t.kind == 'material' ? 'Material' : 'Aufmaß' }} · {{ t.lines|map(l => l.text)|join(', ')|u.truncate(70, '…') }}</div></div>
+                    <form method="post" action="{{ path('wtl_site_template_delete', {tid: t.id}) }}" onsubmit="return confirm('Vorlage löschen?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('wtl_site') }}"><input type="hidden" name="back" value="{{ path('wtl_site') }}">
+                        <button class="btn btn-sm btn-ghost-danger p-1"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </details>
 {% endif %}
 {% endblock %}

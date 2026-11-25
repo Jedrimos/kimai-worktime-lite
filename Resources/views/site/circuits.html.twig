@@ -1,0 +1,57 @@
+{% extends 'page_setup.html.twig' %}
+{% block page_title %}Stromkreisliste{% endblock %}
+{% block main %}
+{% set token = csrf_token('wtl_site') %}
+<div class="d-flex gap-2 mb-3">
+    <a class="btn" href="{{ path('wtl_site_project', {id: project.id}) }}"><i class="fas fa-chevron-left me-1"></i>{{ project.name }}</a>
+    {% if boards|length > 0 %}<a class="btn btn-primary ms-auto" href="{{ path('wtl_site_circuits_pdf', {id: project.id}) }}" target="_blank"><i class="fas fa-file-pdf me-1"></i>PDF</a>{% endif %}
+</div>
+<form method="post" class="card mb-3" autocomplete="off">
+    <div class="card-body">
+        <input type="hidden" name="_token" value="{{ token }}">
+        <div class="row g-2">
+            <div class="col-8"><input type="text" name="board" class="form-control" placeholder="Verteiler (z. B. UV EG)" value="{{ lastBoard }}" list="wtl-boards"></div>
+            <div class="col-4"><input type="text" name="pos" class="form-control" placeholder="Pos." value="{{ nextPos }}"></div>
+            <div class="col-5"><input type="text" name="device" class="form-control" placeholder="B16 / FI 40/0,03" list="wtl-devices"></div>
+            <div class="col-7"><input type="text" name="cable" class="form-control" placeholder="Leitung (NYM-J 3x1,5)" list="wtl-cables"></div>
+            <div class="col-12"><input type="text" name="description" class="form-control" placeholder="Was hängt dran? (Küche Steckdosen)" data-wtl-dictate></div>
+            <div class="col-12"><button class="btn btn-primary w-100"><i class="fas fa-plus me-1"></i>Stromkreis hinzufügen</button></div>
+        </div>
+        <datalist id="wtl-boards">{% for b, rows in boards %}{% if b %}<option value="{{ b }}">{% endif %}{% endfor %}</datalist>
+        <datalist id="wtl-devices">{% for d in ['B10','B13','B16','B20','B25','C16','C32','B16 3-pol.','FI 40/0,03 A','FI 40/0,03 B','FI/LS B16 0,03','SPD Typ 1+2','Hauptschalter'] %}<option value="{{ d }}">{% endfor %}</datalist>
+        <datalist id="wtl-cables">{% for c in ['NYM-J 3x1,5','NYM-J 3x2,5','NYM-J 5x1,5','NYM-J 5x2,5','NYM-J 5x4','NYM-J 5x6','NYM-J 5x10','NYY-J 5x16','J-Y(St)Y 2x2x0,8'] %}<option value="{{ c }}">{% endfor %}</datalist>
+    </div>
+</form>
+{% for board, rows in boards %}
+    <div class="card mb-3">
+        <div class="card-header py-2"><strong><i class="fas fa-th me-2"></i>{{ board ?: 'Ohne Verteiler' }}</strong><span class="badge ms-auto">{{ rows|length }}</span></div>
+        <div class="list-group list-group-flush">
+            {% for r in rows %}
+                <details class="list-group-item py-2">
+                    <summary class="d-flex gap-2 align-items-center" style="list-style:none;cursor:pointer">
+                        <span class="fw-bold" style="min-width:3rem">{{ r.pos }}</span>
+                        <span class="badge bg-blue-lt" style="min-width:4.5rem">{{ r.device }}</span>
+                        <span class="flex-fill">{{ r.description }}<br><small class="text-secondary">{{ r.cable }}</small></span>
+                        <i class="fas fa-pen text-secondary small"></i>
+                    </summary>
+                    <form method="post" action="{{ path('wtl_site_circuit_action', {cid: r.id, action: 'edit'}) }}" class="row g-2 mt-2">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <div class="col-8"><input type="text" name="board" class="form-control form-control-sm" value="{{ r.board }}" placeholder="Verteiler"></div>
+                        <div class="col-4"><input type="text" name="pos" class="form-control form-control-sm" value="{{ r.pos }}"></div>
+                        <div class="col-5"><input type="text" name="device" class="form-control form-control-sm" value="{{ r.device }}" list="wtl-devices"></div>
+                        <div class="col-7"><input type="text" name="cable" class="form-control form-control-sm" value="{{ r.cable }}" list="wtl-cables"></div>
+                        <div class="col-12"><input type="text" name="description" class="form-control form-control-sm" value="{{ r.description }}"></div>
+                        <div class="col-8"><button class="btn btn-sm btn-primary w-100">Speichern</button></div>
+                    </form>
+                    <form method="post" action="{{ path('wtl_site_circuit_action', {cid: r.id, action: 'delete'}) }}" onsubmit="return confirm('Stromkreis löschen?')" class="text-end mt-1">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <button class="btn btn-sm btn-ghost-danger"><i class="fas fa-trash me-1"></i>Löschen</button>
+                    </form>
+                </details>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <div class="text-secondary text-center py-3">Noch keine Stromkreise.</div>
+{% endfor %}
+{% endblock %}

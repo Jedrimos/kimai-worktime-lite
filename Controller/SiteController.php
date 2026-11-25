@@ -9,6 +9,7 @@ use App\Pdf\HtmlToPdfConverter;
 use App\Repository\ProjectRepository;
 use App\Repository\TimesheetRepository;
 use App\Repository\Query\ProjectQuery;
+use KimaiPlugin\WorkTimeLiteBundle\Service\MonteurRepository;
 use KimaiPlugin\WorkTimeLiteBundle\Service\Settings;
 use KimaiPlugin\WorkTimeLiteBundle\Service\SiteRepository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -36,6 +37,7 @@ final class SiteController extends AbstractController
         private readonly HtmlToPdfConverter $pdfConverter,
         private readonly Settings $settings,
         private readonly TimesheetRepository $timesheetRepository,
+        private readonly MonteurRepository $monteur,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
     )
@@ -85,12 +87,13 @@ final class SiteController extends AbstractController
             }
         }
 
+        $status = $this->settings->bool('site_status', true) ? $this->monteur->allStatus($user->getId()) : [];
         $customers = [];
         foreach ($projects as $project) {
             $c = $project->getCustomer();
             $key = $c?->getId() ?? 0;
             $customers[$key] ??= ['name' => $c?->getName() ?? '–', 'projects' => []];
-            $customers[$key]['projects'][] = ['id' => $project->getId(), 'name' => $project->getName()];
+            $customers[$key]['projects'][] = ['id' => $project->getId(), 'name' => $project->getName(), 'status' => $status[$project->getId()] ?? null];
         }
         uasort($customers, fn ($a, $b) => strnatcasecmp($a['name'], $b['name']));
 
@@ -110,6 +113,9 @@ final class SiteController extends AbstractController
         }
 
         return $this->render('@WorkTimeLite/site/index.html.twig', [
+            'statusLabels' => MonteurRepository::STATUS,
+            'useStatus' => $this->settings->bool('site_status', true),
+            'templates' => $this->settings->bool('site_templates', true) ? $this->monteur->templates($user->getId()) : [],
             'visited' => $visited,
             'customers' => $customers,
             'recent' => $recent,
@@ -239,6 +245,35 @@ final class SiteController extends AbstractController
         ] + $this->formHelpers($request, $user, $kind));
     }
 
+    #[Route(path: '/sheet/{sid}/template', name: 'wtl_site_sheet_template', requirements: ['sid' => '\d+'], methods: ['POST'])]
+    public function sheetToTemplate(Request $request, int $sid): Response
+    {
+        $user = $this->getUser();
+        $sheet = $this->repository->findSheet($user->getId(), $sid) ?? throw $this->createNotFoundException();
+        $name = mb_substr(trim((string) $request->request->get('name')), 0, 150);
+        if ($name !== '' && $this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            $lines = [];
+            foreach ($this->repository->itemsForSheet($user->getId(), $sid) as $item) {
+                $lines[] = ['quantity' => $item['quantity'] !== null ? (float) $item['quantity'] : null, 'unit' => $item['unit'], 'text' => $item['text']];
+            }
+            $this->monteur->addTemplate($user->getId(), (string) $sheet['kind'], $name, $lines);
+            $this->addFlash('info', 'Vorlage „' . $name . '“ gespeichert.');
+        }
+
+        return $this->redirectToRoute('wtl_site_sheet', ['sid' => $sid]);
+    }
+
+    #[Route(path: '/template/{tid}/delete', name: 'wtl_site_template_delete', requirements: ['tid' => '\d+'], methods: ['POST'])]
+    public function templateDelete(Request $request, int $tid): Response
+    {
+        $user = $this->getUser();
+        if ($this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            $this->monteur->deleteTemplate($user->getId(), $tid);
+        }
+
+        return $this->redirect($this->safeBack($request, $this->generateUrl('wtl_site')));
+    }
+
     #[Route(path: '/sheet/{sid}/delete', name: 'wtl_site_sheet_delete', requirements: ['sid' => '\d+'], methods: ['POST'])]
     public function deleteSheet(Request $request, int $sid): Response
     {
@@ -345,6 +380,12 @@ final class SiteController extends AbstractController
             'stats' => $stats,
             'recent' => $recent,
             'todos' => $this->settings->bool('site_todos', true) ? $this->repository->todos($user->getId(), $project->getId()) : null,
+            'meta' => $this->monteur->meta($user->getId(), $project->getId()),
+            'useStatus' => $this->settings->bool('site_status', true),
+            'useAccess' => $this->settings->bool('site_access', true),
+            'useCircuits' => $this->settings->bool('site_circuits', true),
+            'circuitCount' => $this->settings->bool('site_circuits', true) ? \count($this->monteur->circuits($user->getId(), $project->getId())) : 0,
+            'statusLabels' => MonteurRepository::STATUS,
             'photos' => $this->settings->bool('site_photos', true) ? \array_slice($this->repository->photos($user->getId(), $project->getId()), 0, 6) : null,
             'photoCount' => $this->settings->bool('site_photos', true) ? \count($this->repository->photos($user->getId(), $project->getId())) : 0,
         ];
@@ -372,6 +413,8 @@ final class SiteController extends AbstractController
     private function formHelpers(Request $request, User $user, string $kind): array
     {
         return [
+            'favorites' => $kind !== 'notiz' && $this->settings->bool('site_favorites', true) ? $this->repository->favorites($user->getId(), $kind) : [],
+            'templates' => $kind !== 'notiz' && $this->settings->bool('site_templates', true) ? $this->monteur->templates($user->getId(), $kind) : null,
             'units' => self::UNITS,
             'suggestions' => $this->repository->suggestions($user->getId(), $kind),
             'suppliers' => $this->repository->suppliers($user->getId()),
@@ -466,6 +509,110 @@ final class SiteController extends AbstractController
         return $this->redirect($this->safeBack($request, $this->generateUrl('wtl_site_project', ['id' => $todo['project_id']])));
     }
 
+    #[Route(path: '/{id}/meta', name: 'wtl_site_meta', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function meta(Request $request, int $id): Response
+    {
+        $user = $this->getUser();
+        $this->loadProject($user, $id);
+        if ($this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            if ($request->request->has('status')) {
+                $st = (string) $request->request->get('status');
+                $this->monteur->setMeta($user->getId(), $id, 'status', \array_key_exists($st, MonteurRepository::STATUS) ? $st : null);
+            }
+            if ($request->request->has('access_info')) {
+                $a = trim((string) $request->request->get('access_info'));
+                $this->monteur->setMeta($user->getId(), $id, 'access_info', $a !== '' ? mb_substr($a, 0, 2000) : null);
+            }
+        }
+
+        return $this->redirect($this->safeBack($request, $this->generateUrl('wtl_site_project', ['id' => $id])));
+    }
+
+    // ---------- Stromkreisliste ----------
+
+    #[Route(path: '/{id}/circuits', name: 'wtl_site_circuits', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function circuits(Request $request, int $id): Response
+    {
+        $this->denyUnless('site_circuits');
+        $user = $this->getUser();
+        $project = $this->loadProject($user, $id);
+        if ($request->isMethod('POST') && $this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            $data = $this->circuitData($request);
+            if (($data['description'] ?? null) !== null || ($data['pos'] ?? null) !== null) {
+                $this->monteur->addCircuit($user->getId(), $id, $data);
+                $request->getSession()->set('wtl_last_board', $data['board']);
+            }
+
+            return $this->redirectToRoute('wtl_site_circuits', ['id' => $id]);
+        }
+        $rows = $this->monteur->circuits($user->getId(), $id);
+        $boards = [];
+        foreach ($rows as $r) {
+            $boards[(string) ($r['board'] ?? '')][] = $r;
+        }
+        // nächste Position vorschlagen: F + (höchste Nummer + 1)
+        $next = 'F1';
+        $max = 0;
+        foreach ($rows as $r) {
+            if (preg_match('/^([A-Za-z]*)(\d+)$/', (string) $r['pos'], $m) && (int) $m[2] >= $max) {
+                $max = (int) $m[2];
+                $next = ($m[1] !== '' ? $m[1] : 'F') . ($max + 1);
+            }
+        }
+
+        return $this->render('@WorkTimeLite/site/circuits.html.twig', [
+            'project' => $project,
+            'boards' => $boards,
+            'nextPos' => $next,
+            'lastBoard' => (string) $request->getSession()->get('wtl_last_board', ''),
+        ]);
+    }
+
+    #[Route(path: '/circuit/{cid}/{action}', name: 'wtl_site_circuit_action', requirements: ['cid' => '\d+', 'action' => 'edit|delete'], methods: ['POST'])]
+    public function circuitAction(Request $request, int $cid, string $action): Response
+    {
+        $user = $this->getUser();
+        $pid = $this->monteur->circuitProject($user->getId(), $cid) ?? throw $this->createNotFoundException();
+        if ($this->isCsrfTokenValid('wtl_site', (string) $request->request->get('_token'))) {
+            $action === 'delete' ? $this->monteur->deleteCircuit($user->getId(), $cid) : $this->monteur->updateCircuit($user->getId(), $cid, $this->circuitData($request));
+        }
+
+        return $this->redirectToRoute('wtl_site_circuits', ['id' => $pid]);
+    }
+
+    #[Route(path: '/{id}/circuits/pdf', name: 'wtl_site_circuits_pdf', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function circuitsPdf(int $id): Response
+    {
+        $this->denyUnless('site_circuits');
+        $user = $this->getUser();
+        $project = $this->loadProject($user, $id);
+        $boards = [];
+        foreach ($this->monteur->circuits($user->getId(), $id) as $r) {
+            $boards[(string) ($r['board'] ?? '')][] = $r;
+        }
+
+        return $this->pdfResponse($this->renderView('@WorkTimeLite/site/circuits_pdf.html.twig', [
+            'project' => $project,
+            'boards' => $boards,
+            'user' => $user,
+            'now' => new \DateTimeImmutable('now', new \DateTimeZone($user->getTimezone())),
+        ]), 'Stromkreisliste ' . $project->getName());
+    }
+
+    /**
+     * @return array{board: ?string, pos: ?string, device: ?string, description: ?string, cable: ?string}
+     */
+    private function circuitData(Request $request): array
+    {
+        $out = [];
+        foreach (['board' => 100, 'pos' => 30, 'device' => 100, 'description' => 300, 'cable' => 100] as $k => $len) {
+            $v = mb_substr(trim((string) $request->request->get($k)), 0, $len);
+            $out[$k] = $v !== '' ? $v : null;
+        }
+
+        return $out;
+    }
+
     // ---------- Fotos ----------
 
     private function photoDir(int $userId): string
@@ -498,7 +645,11 @@ final class SiteController extends AbstractController
                 }
                 $name = bin2hex(random_bytes(12)) . '.' . $ext;
                 $file->move($dir, $name);
-                $this->repository->addPhoto($user->getId(), $id, $name, $comment !== '' ? $comment : null);
+                $pkind = (string) $request->request->get('kind', 'foto');
+                $pkind = \in_array($pkind, ['foto', 'zaehler', 'typenschild'], true) && $this->settings->bool('site_meters', true) ? $pkind : 'foto';
+                $meterNo = mb_substr(trim((string) $request->request->get('meter_no')), 0, 60);
+                $reading = mb_substr(trim((string) $request->request->get('reading')), 0, 60);
+                $this->repository->addPhoto($user->getId(), $id, $name, $comment !== '' ? $comment : null, $pkind, $meterNo !== '' ? $meterNo : null, $reading !== '' ? $reading : null);
                 ++$count;
             }
             if ($count === 0) {
@@ -509,6 +660,7 @@ final class SiteController extends AbstractController
         }
 
         return $this->render('@WorkTimeLite/site/photos.html.twig', [
+            'useMeters' => $this->settings->bool('site_meters', true),
             'project' => $project,
             'photos' => $this->repository->photos($user->getId(), $id),
         ]);

@@ -1,0 +1,20 @@
+<html><head><meta charset="utf-8"><style>
+body { font-family: sans-serif; font-size: 10pt; }
+.doctitle { font-size: 20pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1mm solid #000; padding-bottom: 2mm; margin-bottom: 3mm; }
+h1 { font-size: 13pt; margin: 0 0 2mm 0; } h2 { font-size: 12pt; margin: 6mm 0 2mm 0; }
+.meta { color: #555; margin-bottom: 4mm; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 0.2mm solid #999; padding: 1.5mm; text-align: left; vertical-align: top; }
+th { background: #eee; }
+</style></head><body>
+<div class="doctitle">Stromkreisliste</div>
+<h1>Baustelle: {{ project.name }}</h1>
+<div class="meta">{% if project.customer %}Kunde: {{ project.customer.name }} · {% endif %}{{ user.displayName }} · Stand {{ now|date('d.m.Y', false) }}</div>
+{% for board, rows in boards %}
+    <h2>{{ board ?: 'Verteiler' }}</h2>
+    <table>
+        <tr><th style="width:14mm">Pos.</th><th style="width:34mm">Schutzorgan</th><th>Stromkreis / Verbraucher</th><th style="width:40mm">Leitung</th></tr>
+        {% for r in rows %}<tr><td>{{ r.pos }}</td><td>{{ r.device }}</td><td>{{ r.description }}</td><td>{{ r.cable }}</td></tr>{% endfor %}
+    </table>
+{% endfor %}
+</body></html>
