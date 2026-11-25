@@ -2,7 +2,7 @@
     "name": "jedrimos/worktime-lite-bundle",
     "description": "Handwerker Toolbox: Monteur-App für Kimai – Baustellen (Aufmaß, Material, Fotos, Restarbeiten, Stromkreise), Heute-Dashboard, Arbeitszeitkonto, Abwesenheiten, Monatsabschluss mit PDF-Versand",
     "type": "kimai-plugin",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "license": "MIT",
     "keywords": ["kimai", "kimai-plugin"],
     "extra": {

@@ -74,6 +74,25 @@ final class MenuSubscriber implements EventSubscriberInterface
         if (!$inserted) {
             $children[] = $site;
         }
+        // Gewerbe-Menü nur für Benutzer mit Gewerbe-Modus (z. B. "Nebenbei")
+        $u = $this->security->getUser();
+        if ($u instanceof \App\Entity\User && (bool) $u->getPreferenceValue(\KimaiPlugin\WorkTimeLiteBundle\EventSubscriber\UserPreferenceSubscriber::BUSINESS, false, false)) {
+            $biz = new MenuItemModel('wtl_business_menu', 'Gewerbe', null, [], 'fas fa-briefcase');
+            $biz->addChild(new MenuItemModel('wtl_business', 'Übersicht', 'wtl_business', [], 'fas fa-chart-pie'));
+            $biz->addChild(new MenuItemModel('wtl_business_income', 'Einnahmen', 'wtl_business_list', ['type' => 'income'], 'fas fa-arrow-down'));
+            $biz->addChild(new MenuItemModel('wtl_business_expense', 'Ausgaben', 'wtl_business_list', ['type' => 'expense'], 'fas fa-receipt'));
+            $biz->addChild(new MenuItemModel('wtl_business_trip', 'Fahrten', 'wtl_business_list', ['type' => 'trip'], 'fas fa-car'));
+            $biz->setChildRoutes(['wtl_business', 'wtl_business_list']);
+            $root->addChild($biz);
+            $tmp = [];
+            foreach ($children as $child) {
+                $tmp[] = $child;
+                if ($child === $site) {
+                    $tmp[] = $biz;
+                }
+            }
+            $children = $tmp;
+        }
         $root->setChildren($children);
 
         $menu = $event->getTimesheetMenu();

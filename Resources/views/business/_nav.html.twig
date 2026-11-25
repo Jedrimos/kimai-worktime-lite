@@ -1,0 +1,11 @@
+{# params: active, year #}
+<div class="d-flex gap-2 mb-3 flex-wrap">
+    {% for k, l in {overview: ['wtl_business', 'Übersicht', 'fa-chart-pie'], income: ['wtl_business_list', 'Einnahmen', 'fa-arrow-down'], expense: ['wtl_business_list', 'Ausgaben', 'fa-receipt'], trip: ['wtl_business_list', 'Fahrten', 'fa-car']} %}
+        <a class="btn {{ active == k ? 'btn-primary' : '' }} flex-fill flex-lg-grow-0" href="{{ k == 'overview' ? path(l[0], {year: year}) : path(l[0], {type: k, year: year}) }}"><i class="fas {{ l[2] }} me-1"></i>{{ l[1] }}</a>
+    {% endfor %}
+    <div class="ms-lg-auto d-flex gap-1 align-items-center">
+        <a class="btn btn-sm" href="{{ active == 'overview' ? path('wtl_business', {year: year - 1}) : path('wtl_business_list', {type: active, year: year - 1}) }}"><i class="fas fa-chevron-left"></i></a>
+        <strong class="px-2">{{ year }}</strong>
+        <a class="btn btn-sm" href="{{ active == 'overview' ? path('wtl_business', {year: year + 1}) : path('wtl_business_list', {type: active, year: year + 1}) }}"><i class="fas fa-chevron-right"></i></a>
+    </div>
+</div>

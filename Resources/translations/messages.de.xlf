@@ -710,6 +710,14 @@
         <source>wtl.cfg.site_companions</source>
         <target>„Mit wem“ beim Zeiteintrag (Kollegen/Azubis)</target>
       </trans-unit>
+      <trans-unit id="wtl177" resname="wtl.pref.business">
+        <source>wtl.pref.business</source>
+        <target>Gewerbe-Modus (eigene Firma)</target>
+      </trans-unit>
+      <trans-unit id="wtl178" resname="wtl.pref.business.help">
+        <source>wtl.pref.business.help</source>
+        <target>Zeigt den Menüpunkt „Gewerbe“: Kleinunternehmer-Ampel, Einnahmen, Ausgaben mit Beleg, Fahrten und EÜR-Übersicht.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

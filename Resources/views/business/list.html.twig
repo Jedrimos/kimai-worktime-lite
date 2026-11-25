@@ -1,0 +1,67 @@
+{% extends '@WorkTimeLite/_base.html.twig' %}
+{% set titles = {income: 'Einnahmen', expense: 'Ausgaben', trip: 'Fahrten'} %}
+{% block page_title %}{{ titles[type] }} {{ year }}{% endblock %}
+{% block wtl %}
+{% set token = csrf_token('wtl_business') %}
+{% include '@WorkTimeLite/business/_nav.html.twig' with {active: type, year: year} only %}
+<div class="row g-3">
+    <div class="col-lg-4">
+        <form method="post" enctype="multipart/form-data" class="card mb-3" autocomplete="off">
+            <div class="card-header py-2"><strong>{{ type == 'income' ? 'Einnahme ohne Rechnung' : (type == 'expense' ? 'Neue Ausgabe' : 'Neue Fahrt') }}</strong></div>
+            <div class="card-body">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label">Datum</label><input type="date" name="date" class="form-control" value="{{ today }}"></div>
+                    {% if type == 'trip' %}
+                        <div class="col-6"><label class="form-label">km</label><input type="text" name="km" class="form-control" inputmode="decimal" placeholder="einfach"></div>
+                        <div class="col-12"><label class="form-check"><input type="checkbox" name="roundtrip" value="1" class="form-check-input" checked><span class="form-check-label">Hin und zurück (× 2)</span></label></div>
+                    {% else %}
+                        <div class="col-6"><label class="form-label">Betrag (€)</label><input type="text" name="amount" class="form-control" inputmode="decimal" placeholder="0,00"></div>
+                    {% endif %}
+                    {% if type == 'expense' %}
+                        <div class="col-12"><label class="form-label">Kategorie</label><select name="category" class="form-select">{% for k, l in categories %}<option value="{{ k }}">{{ l }}</option>{% endfor %}</select></div>
+                    {% endif %}
+                    <div class="col-12"><label class="form-label">{{ type == 'expense' ? 'Wofür / Lieferant' : (type == 'trip' ? 'Ziel / Zweck' : 'Kunde / Leistung') }}</label><input type="text" name="title" class="form-control" data-wtl-dictate></div>
+                    {% if type != 'income' %}
+                        <div class="col-12"><label class="form-label">Projekt (optional)</label><select name="project" class="form-select"><option value="">–</option>{% for pid, p in projects %}<option value="{{ pid }}">{{ p.name }}{% if p.customer %} ({{ p.customer.name }}){% endif %}</option>{% endfor %}</select></div>
+                    {% endif %}
+                    {% if type == 'expense' %}
+                        <div class="col-12"><label class="btn w-100"><i class="fas fa-camera me-1"></i><span class="wtl-file-label">Beleg fotografieren / PDF</span><input type="file" name="receipt" accept="image/*,application/pdf" class="d-none" onchange="this.previousElementSibling.textContent = this.files[0] ? this.files[0].name : 'Beleg fotografieren / PDF'"></label></div>
+                    {% endif %}
+                    <div class="col-12"><input type="text" name="note" class="form-control" placeholder="Notiz (optional)"></div>
+                    <div class="col-12"><button class="btn btn-primary w-100"><i class="fas fa-plus me-1"></i>Speichern</button></div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header py-2"><strong>{{ titles[type] }} {{ year }}</strong>
+                <span class="ms-auto fw-bold">{{ type == 'trip' ? sum|number_format(1, ',', '.') ~ ' km = ' ~ (sum * kmRate)|number_format(2, ',', '.') ~ ' €' : sum|number_format(2, ',', '.') ~ ' €' }}</span>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for e in entries %}
+                    <div class="list-group-item py-2 d-flex align-items-center gap-2">
+                        <div class="text-secondary small text-nowrap" style="min-width:4.5rem">{{ e.entry_date|date('d.m.Y') }}</div>
+                        <div class="flex-fill">
+                            <div class="fw-bold">{{ e.title }}</div>
+                            <div class="small text-secondary">
+                                {% if e.category %}{{ categories[e.category] ?? e.category }}{% endif %}
+                                {% if e.project_id and projects[e.project_id] is defined %} · {{ projects[e.project_id].name }}{% endif %}
+                                {% if e.note %} · {{ e.note }}{% endif %}
+                            </div>
+                        </div>
+                        {% if e.receipt %}<a href="{{ path('wtl_business_receipt', {id: e.id}) }}" target="_blank" class="btn btn-sm btn-ghost-secondary p-1" title="Beleg"><i class="fas fa-paperclip"></i></a>{% endif %}
+                        <div class="fw-bold text-nowrap">{{ type == 'trip' ? e.km|number_format(1, ',', '.') ~ ' km' : e.amount|number_format(2, ',', '.') ~ ' €' }}</div>
+                        <form method="post" action="{{ path('wtl_business_delete', {id: e.id}) }}" onsubmit="return confirm('Eintrag löschen?')"><input type="hidden" name="_token" value="{{ token }}"><button class="btn btn-sm btn-ghost-danger p-1"><i class="fas fa-trash"></i></button></form>
+                    </div>
+                {% else %}
+                    <div class="list-group-item text-secondary">Noch nichts in {{ year }}.</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if type == 'income' %}<div class="form-hint mt-2">Rechnungen aus Kimai zählen automatisch, sobald sie auf „bezahlt“ stehen. Hier nur Einnahmen ohne Kimai-Rechnung eintragen (z. B. bar).</div>{% endif %}
+        {% if type == 'trip' %}<div class="form-hint mt-2">Fahrten mit dem privaten Auto für das Gewerbe – Kilometersatz in der Übersicht unter Einstellungen.</div>{% endif %}
+    </div>
+</div>
+{% endblock %}
