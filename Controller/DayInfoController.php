@@ -56,6 +56,20 @@ final class DayInfoController extends AbstractController
             ];
         }
 
+        // Beginn für neuen Eintrag: Ende des letzten Eintrags an diesem Tag, sonst Arbeitsbeginn
+        [$sh, $sm] = $this->settings->getAbsenceStartTime();
+        $nextBegin = \sprintf('%02d:%02d', $sh, $sm);
+        $lastEnd = $this->timesheetRepository->createQueryBuilder('t')
+            ->select('MAX(t.end)')
+            ->where('t.user = :user')->andWhere('t.date = :date')->andWhere('t.end IS NOT NULL')
+            ->setParameter('user', $user->getId())->setParameter('date', $date->format('Y-m-d'))
+            ->getQuery()->getSingleScalarResult();
+        $hasEntries = false;
+        if ($lastEnd !== null) {
+            $hasEntries = true;
+            $nextBegin = (new \DateTimeImmutable((string) $lastEnd, new \DateTimeZone('UTC')))->setTimezone($tz)->format('H:i');
+        }
+
         // letzter Arbeits-Eintrag vor diesem Tag (ohne Abwesenheiten)
         $last = null;
         $qb = $this->timesheetRepository->createQueryBuilder('t');
@@ -106,6 +120,6 @@ final class DayInfoController extends AbstractController
             break;
         }
 
-        return new JsonResponse(['standard' => $standard, 'last' => $last]);
+        return new JsonResponse(['standard' => $standard, 'last' => $last, 'nextBegin' => $nextBegin, 'continues' => $hasEntries]);
     }
 }

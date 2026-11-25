@@ -30,11 +30,13 @@ final class DayButtonsSubscriber implements EventSubscriberInterface
 
     public function renderJavascript(ThemeEvent $event): void
     {
-        if (!$this->settings->bool('day_buttons', true) || $this->security->getUser() === null) {
+        $buttons = $this->settings->bool('day_buttons', true);
+        $smart = $this->settings->bool('smart_begin', true);
+        if ((!$buttons && !$smart) || $this->security->getUser() === null) {
             return;
         }
 
-        $config = json_encode(['url' => $this->urlGenerator->generate('wtl_day_info')], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $config = json_encode(['url' => $this->urlGenerator->generate('wtl_day_info'), 'buttons' => $buttons, 'smart' => $smart], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
         $event->addContent(<<<HTML
 <script>
@@ -85,6 +87,29 @@ final class DayButtonsSubscriber implements EventSubscriberInterface
         if (!/^timesheet/.test(form.name || '') || !/\/create/.test(form.getAttribute('action') || '')) { return; }
         if (!field(form, 'begin_time') || !field(form, 'end_time')) { return; }
         form.dataset.wtlDay = '1';
+
+        // Beginn automatisch: da weiter, wo der letzte Eintrag am Tag aufgehört hat (sonst Arbeitsbeginn)
+        if (cfg.smart && !/[?&](from|begin)=[^&]*\d{2}:\d{2}|[?&]from=/.test(window.location.search + ' ' + (form.getAttribute('action') || ''))) {
+            var bt = field(form, 'begin_time'), bd = field(form, 'begin_date');
+            var touched = false, setting = false;
+            bt.addEventListener('input', function () { if (!setting) { touched = true; } });
+            bt.addEventListener('change', function () { if (!setting) { touched = true; } });
+            function applyBegin() {
+                if (touched) { return; }
+                fetch(cfg.url + '?date=' + encodeURIComponent(isoDate(form)), { credentials: 'same-origin' })
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        if (touched || !d.nextBegin) { return; }
+                        setting = true; setVal(bt, d.nextBegin); setting = false;
+                        var hint = form.querySelector('.wtl-begin-hint');
+                        if (!hint) { hint = document.createElement('div'); hint.className = 'form-hint wtl-begin-hint'; bt.closest('.mb-3, .form-group, div').appendChild(hint); }
+                        hint.textContent = d.continues ? 'Beginn = Ende vom letzten Eintrag an diesem Tag' : 'Beginn = Arbeitsbeginn';
+                    });
+            }
+            applyBegin();
+            if (bd) { bd.addEventListener('change', applyBegin); }
+        }
+        if (!cfg.buttons) { return; }
 
         var bar = document.createElement('div');
         bar.className = 'd-flex flex-wrap gap-2 mb-3 wtl-day-buttons';

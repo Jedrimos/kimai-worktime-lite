@@ -690,6 +690,10 @@
         <source>wtl.cfg.tax_travel_minutes</source>
         <target>Zusätzliche Abwesenheit pro Tag für Hin- und Rückweg (Minuten)</target>
       </trans-unit>
+      <trans-unit id="wtl172" resname="wtl.cfg.smart_begin">
+        <source>wtl.cfg.smart_begin</source>
+        <target>Neuer Eintrag beginnt am Ende des letzten Eintrags (erster am Tag: Arbeitsbeginn)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

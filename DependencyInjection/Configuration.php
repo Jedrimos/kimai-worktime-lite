@@ -59,6 +59,7 @@ final class Configuration implements ConfigurationInterface
                 ->booleanNode('quick_create_global_activity')->defaultTrue()->end()
                 ->booleanNode('auto_team')->defaultTrue()->end()
                 ->booleanNode('day_buttons')->defaultTrue()->end()
+                ->booleanNode('smart_begin')->defaultTrue()->end()
                 ->booleanNode('site_today')->defaultTrue()->end()
                 ->booleanNode('mobile_nav')->defaultTrue()->end()
                 ->booleanNode('site_favorites')->defaultTrue()->end()
